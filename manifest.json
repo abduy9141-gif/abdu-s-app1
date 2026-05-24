@@ -1,0 +1,33 @@
+{
+  "name": "የአብዱ አፕ",
+  "short_name": "አብዱ",
+  "description": "የዕለት ሩቲን፣ ጤና፣ ዕቅድ PWA",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0A0F",
+  "theme_color": "#F5C842",
+  "lang": "am",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230A0A0F'/%3E%3Ctext x='256' y='380' text-anchor='middle' font-size='380' font-family='Apple Color Emoji%2CSegoe UI Emoji%2Cnoto color emoji%2Csans-serif'%3E%F0%9F%8C%9F%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='30' fill='%230A0A0F'/%3E%3Ctext x='96' y='145' text-anchor='middle' font-size='145' font-family='Apple Color Emoji%2CSegoe UI Emoji%2Cnoto color emoji%2Csans-serif'%3E%F0%9F%8C%9F%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ታስኮች",
+      "url": ".",
+      "description": "ታስኮቼን ይመልከቱ"
+    }
+  ]
+}
