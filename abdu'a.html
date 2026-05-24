@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html lang="am" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="የአብዱ አፕ">
+<title>የአብዱ አፕ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0A0A0F;
+  --surface: #13131A;
+  --surface2: #1C1C26;
+  --surface3: #252530;
+  --accent: #F5C842;
+  --accent-dim: rgba(245,200,66,0.15);
+  --accent2: #2ECC71;
+  --accent3: #3498DB;
+  --text: #F0F0F5;
+  --text2: #A0A0B0;
+  --text3: #606070;
+  --danger: #E74C3C;
+  --warning: #F39C12;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --nav-h: 72px;
+  --font-am: 'Noto Sans Ethiopic', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.theme-green { --accent: #2ECC71; --accent-dim: rgba(46,204,113,0.15); }
+.theme-blue  { --accent: #3498DB; --accent-dim: rgba(52,152,219,0.15); }
+.light-mode  {
+  --bg: #F4F4F8; --surface: #FFFFFF; --surface2: #EBEBF2;
+  --surface3: #DCDCE8; --text: #111118; --text2: #555566; --text3: #AAAABC;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text);
+  font-family:var(--font-am); font-size:15px; line-height:1.5; }
+
+/* ═══ SPLASH ═══ */
+#splash {
+  position:fixed; inset:0; z-index:9999; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+#splash.hide { opacity:0; transform:scale(1.05); pointer-events:none; }
+.splash-logo { font-size:72px; animation:pulse 1.5s ease infinite; }
+.splash-title { font-size:28px; font-weight:900; color:var(--accent); text-align:center; }
+.splash-sub { font-size:15px; color:var(--text2); text-align:center; }
+.splash-quote { font-size:13px; color:var(--accent); text-align:center; max-width:280px;
+  padding:12px 16px; background:var(--accent-dim); border-radius:var(--radius); }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+/* ═══ APP SHELL ═══ */
+#app { height:100%; display:flex; flex-direction:column; overflow:hidden; }
+#screens { flex:1; overflow:hidden; position:relative; }
+.screen {
+  position:absolute; inset:0; overflow-y:auto; padding:16px 16px calc(var(--nav-h) + 16px);
+  opacity:0; transform:translateX(30px); pointer-events:none;
+  transition:opacity 0.3s ease, transform 0.3s ease;
+  scrollbar-width:none;
+}
+.screen::-webkit-scrollbar { display:none; }
+.screen.active { opacity:1; transform:translateX(0); pointer-events:auto; }
+
+/* ═══ BOTTOM NAV ═══ */
+#bottom-nav {
+  position:fixed; bottom:0; left:0; right:0; height:var(--nav-h);
+  background:var(--surface); border-top:1px solid var(--surface3);
+  display:flex; align-items:center; justify-content:space-around;
+  padding:0 8px 8px; z-index:100;
+  backdrop-filter:blur(20px);
+}
+.nav-btn {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 16px; border:none; background:transparent; cursor:pointer;
+  color:var(--text3); transition:var(--transition); border-radius:var(--radius-sm);
+  font-family:var(--font-am);
+}
+.nav-btn.active { color:var(--accent); }
+.nav-btn.active .nav-icon { transform:translateY(-4px) scale(1.2); }
+.nav-icon { font-size:24px; transition:var(--transition); }
+.nav-label { font-size:10px; font-weight:600; }
+
+/* ═══ HEADERS ═══ */
+.screen-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.screen-title { font-size:22px; font-weight:900; color:var(--text); }
+.header-sub { font-size:12px; color:var(--text2); }
+
+/* ═══ CARDS ═══ */
+.card {
+  background:var(--surface); border-radius:var(--radius); padding:16px;
+  margin-bottom:12px; box-shadow:var(--shadow); border:1px solid var(--surface3);
+  transition:var(--transition);
+}
+.card:active { transform:scale(0.98); }
+.card-title { font-size:13px; font-weight:700; color:var(--text2); margin-bottom:10px; 
+  text-transform:uppercase; letter-spacing:0.5px; }
+
+/* ═══ PROGRESS BAR ═══ */
+.progress-wrap { background:var(--surface3); border-radius:99px; overflow:hidden; }
+.progress-bar {
+  height:8px; background:var(--accent); border-radius:99px;
+  transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+.progress-bar.h12 { height:12px; }
+.progress-txt { font-family:var(--font-mono); font-size:12px; color:var(--text2);
+  text-align:right; margin-top:4px; }
+
+/* ═══ BUTTONS ═══ */
+.btn {
+  display:inline-flex; align-items:center; gap:8px; padding:12px 20px;
+  border:none; border-radius:var(--radius-sm); font-family:var(--font-am);
+  font-size:14px; font-weight:700; cursor:pointer; transition:var(--transition);
+}
+.btn-primary { background:var(--accent); color:#000; }
+.btn-primary:active { transform:scale(0.95); filter:brightness(0.9); }
+.btn-outline { background:transparent; border:1.5px solid var(--accent); color:var(--accent); }
+.btn-danger { background:var(--danger); color:#fff; }
+.btn-success { background:var(--accent2); color:#000; }
+.btn-full { width:100%; justify-content:center; }
+.btn-sm { padding:8px 14px; font-size:13px; }
+
+/* ═══ FAB ═══ */
+#fab {
+  position:fixed; right:20px; bottom:calc(var(--nav-h) + 16px); z-index:99;
+  width:56px; height:56px; border-radius:50%; background:var(--accent);
+  border:none; font-size:28px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  transition:var(--transition); color:#000; font-weight:700;
+}
+#fab.hidden { transform:scale(0); opacity:0; pointer-events:none; }
+#fab:active { transform:scale(0.9); }
+
+/* ═══ MODAL / BOTTOM SHEET ═══ */
+.modal-overlay {
+  position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.7);
+  opacity:0; pointer-events:none; transition:opacity 0.3s ease;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open { opacity:1; pointer-events:auto; }
+.bottom-sheet {
+  position:absolute; bottom:0; left:0; right:0;
+  background:var(--surface); border-radius:24px 24px 0 0;
+  padding:20px; max-height:90vh; overflow-y:auto;
+  transform:translateY(100%); transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-overlay.open .bottom-sheet { transform:translateY(0); }
+.sheet-handle { width:40px; height:4px; background:var(--surface3);
+  border-radius:99px; margin:0 auto 20px; }
+.sheet-title { font-size:18px; font-weight:900; margin-bottom:16px; }
+
+/* ═══ FORM INPUTS ═══ */
+.form-group { margin-bottom:14px; }
+.form-label { font-size:12px; font-weight:700; color:var(--text2); margin-bottom:6px; display:block; }
+.form-input, .form-select, .form-textarea {
+  width:100%; padding:12px 14px; background:var(--surface2); border:1.5px solid var(--surface3);
+  border-radius:var(--radius-sm); color:var(--text); font-family:var(--font-am);
+  font-size:14px; outline:none; transition:border-color 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--accent); }
+.form-select option { background:var(--surface); }
+.form-textarea { resize:none; min-height:80px; }
+
+/* ═══ TOGGLE ═══ */
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0;
+  border-bottom:1px solid var(--surface3); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-info { display:flex; flex-direction:column; gap:2px; }
+.toggle-label { font-size:14px; font-weight:600; }
+.toggle-desc { font-size:12px; color:var(--text2); }
+.toggle {
+  position:relative; width:50px; height:28px; cursor:pointer;
+  background:var(--surface3); border-radius:99px; border:none;
+  transition:background 0.3s;
+}
+.toggle::after {
+  content:''; position:absolute; top:3px; left:3px; width:22px; height:22px;
+  background:#fff; border-radius:50%; transition:var(--transition);
+}
+.toggle.on { background:var(--accent); }
+.toggle.on::after { left:25px; }
+
+/* ═══ DASHBOARD SPECIFIC ═══ */
+.greeting { font-size:24px; font-weight:900; margin-bottom:4px; }
+.date-txt { font-size:13px; color:var(--text2); margin-bottom:16px; }
+.quote-card { background:var(--accent-dim); border:1px solid var(--accent);
+  border-radius:var(--radius); padding:14px; margin-bottom:12px; }
+.quote-txt { font-size:14px; color:var(--accent); font-weight:600; }
+
+/* Mood Tracker */
+.mood-row { display:flex; justify-content:space-around; padding:8px 0; }
+.mood-btn {
+  font-size:32px; background:transparent; border:none; cursor:pointer;
+  padding:8px; border-radius:50%; transition:var(--transition);
+  opacity:0.5; filter:grayscale(1);
+}
+.mood-btn.selected { opacity:1; filter:none; transform:scale(1.3); }
+
+/* Water Cups */
+.cups-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:12px 0; }
+.cup-btn {
+  aspect-ratio:1; background:var(--surface2); border:2px solid var(--surface3);
+  border-radius:var(--radius-sm); font-size:28px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:var(--transition); border:none;
+}
+.cup-btn.filled { background:var(--accent-dim); border:2px solid var(--accent); }
+.cup-btn:active { transform:scale(0.9); }
+
+/* Category Cards */
+.cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cat-card { background:var(--surface2); border-radius:var(--radius); padding:14px;
+  border:1px solid var(--surface3); }
+.cat-icon { font-size:24px; margin-bottom:6px; }
+.cat-name { font-size:12px; color:var(--text2); margin-bottom:8px; }
+.cat-progress { font-family:var(--font-mono); font-size:18px; font-weight:700; color:var(--accent); }
+
+/* ═══ TASKS SPECIFIC ═══ */
+.category-section { margin-bottom:20px; }
+.cat-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:700; font-size:15px; }
+.task-item {
+  display:flex; align-items:flex-start; gap:12px; padding:14px;
+  background:var(--surface); border-radius:var(--radius-sm); margin-bottom:8px;
+  border:1px solid var(--surface3); transition:var(--transition);
+  cursor:pointer; position:relative; overflow:hidden;
+}
+.task-item.done { opacity:0.5; }
+.task-item.done .task-title { text-decoration:line-through; }
+.task-check {
+  width:24px; height:24px; min-width:24px; border-radius:50%;
+  border:2px solid var(--surface3); background:transparent; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:var(--transition);
+}
+.task-check.done { background:var(--accent2); border-color:var(--accent2); color:#000; font-size:14px; }
+.task-info { flex:1; }
+.task-title { font-size:14px; font-weight:600; margin-bottom:2px; }
+.task-meta { font-size:11px; color:var(--text2); display:flex; gap:8px; flex-wrap:wrap; }
+.priority-star { color:var(--accent); font-size:11px; }
+.task-time-tag { background:var(--surface2); padding:2px 6px; border-radius:4px;
+  font-family:var(--font-mono); }
+.task-tip { background:var(--accent-dim); border-radius:var(--radius-sm); padding:8px 12px;
+  margin:8px 14px; font-size:12px; color:var(--accent); display:none; }
+.task-tip.show { display:block; }
+
+/* ═══ HEALTH SPECIFIC ═══ */
+.health-tabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; }
+.health-tab {
+  padding:8px 16px; border-radius:99px; border:1.5px solid var(--surface3);
+  background:transparent; color:var(--text2); cursor:pointer; white-space:nowrap;
+  font-family:var(--font-am); font-size:13px; font-weight:600; transition:var(--transition);
+}
+.health-tab.active { background:var(--accent); border-color:var(--accent); color:#000; }
+
+.walk-timer-display {
+  font-family:var(--font-mono); font-size:64px; font-weight:700;
+  color:var(--accent); text-align:center; padding:20px 0;
+}
+.walk-stats { display:flex; justify-content:space-around; margin:12px 0; }
+.walk-stat { text-align:center; }
+.walk-stat-val { font-family:var(--font-mono); font-size:22px; font-weight:700; color:var(--accent); }
+.walk-stat-lbl { font-size:11px; color:var(--text2); }
+
+.sport-sets-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
+.set-btn {
+  padding:12px; background:var(--surface2); border:2px solid var(--surface3);
+  border-radius:var(--radius-sm); text-align:center; cursor:pointer;
+  font-family:var(--font-am); transition:var(--transition); font-size:12px; font-weight:700;
+}
+.set-btn.done { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+.set-btn:active { transform:scale(0.95); }
+
+/* ═══ PROGRESS SPECIFIC ═══ */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.stat-card { background:var(--surface); border-radius:var(--radius); padding:16px;
+  border:1px solid var(--surface3); text-align:center; }
+.stat-num { font-family:var(--font-mono); font-size:28px; font-weight:700; color:var(--accent); }
+.stat-lbl { font-size:11px; color:var(--text2); margin-top:4px; }
+
+.bar-chart { display:flex; align-items:flex-end; justify-content:space-around;
+  height:120px; gap:6px; padding:12px 0; }
+.bar-col { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
+.bar { width:100%; border-radius:6px 6px 0 0; background:var(--accent);
+  transition:height 0.5s cubic-bezier(0.34,1.56,0.64,1); min-height:4px; }
+.bar-lbl { font-size:10px; color:var(--text2); }
+.bar-val { font-size:9px; font-family:var(--font-mono); color:var(--accent); }
+
+.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-day { aspect-ratio:1; border-radius:6px; display:flex; align-items:center;
+  justify-content:center; font-size:10px; font-family:var(--font-mono);
+  background:var(--surface3); color:var(--text3); }
+.cal-day.good { background:#2ECC71; color:#000; }
+.cal-day.mid  { background:#F39C12; color:#000; }
+.cal-day.bad  { background:#E74C3C; color:#fff; }
+
+.badge-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.badge { padding:8px 14px; border-radius:99px; background:var(--surface2);
+  font-size:12px; font-weight:700; border:1.5px solid var(--surface3);
+  display:flex; align-items:center; gap:6px; }
+.badge.earned { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+
+/* ═══ EYE OVERLAY ═══ */
+#eye-overlay {
+  position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,0.97);
+  display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px;
+}
+#eye-overlay.show { display:flex; }
+.eye-icon { font-size:100px; animation:eyePulse 2s ease infinite; }
+@keyframes eyePulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+.eye-timer { font-family:var(--font-mono); font-size:80px; font-weight:700; color:#fff; }
+.eye-txt { font-size:16px; color:#aaa; text-align:center; max-width:280px; }
+
+/* ═══ CONFETTI ═══ */
+#confetti-canvas { position:fixed; inset:0; z-index:9000; pointer-events:none; }
+
+/* ═══ POMODORO ═══ */
+.pomo-display { font-family:var(--font-mono); font-size:72px; font-weight:700;
+  color:var(--accent); text-align:center; padding:20px 0; }
+.pomo-controls { display:flex; gap:12px; justify-content:center; }
+.pomo-mode { display:flex; gap:8px; justify-content:center; margin-bottom:16px; }
+.pomo-mode-btn { padding:8px 20px; border-radius:99px; border:1.5px solid var(--surface3);
+  background:transparent; color:var(--text2); cursor:pointer; font-family:var(--font-am);
+  font-size:13px; transition:var(--transition); }
+.pomo-mode-btn.active { background:var(--accent); border-color:var(--accent); color:#000; font-weight:700; }
+
+/* ═══ TOAST ═══ */
+#toast {
+  position:fixed; bottom:calc(var(--nav-h) + 80px); left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--surface); color:var(--text); padding:12px 20px; border-radius:99px;
+  font-size:13px; font-weight:600; box-shadow:var(--shadow); z-index:8000;
+  opacity:0; transition:all 0.3s ease; pointer-events:none; white-space:nowrap;
+  border:1px solid var(--surface3);
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ═══ STREAK ═══ */
+.streak-display { display:flex; align-items:center; gap:12px; }
+.streak-num { font-family:var(--font-mono); font-size:48px; font-weight:700; color:var(--accent); }
+.streak-txt { font-size:13px; color:var(--text2); }
+
+/* ═══ MISC ═══ */
+.section-label { font-size:12px; font-weight:700; color:var(--text2); margin-bottom:8px;
+  text-transform:uppercase; letter-spacing:0.5px; }
+.divider { height:1px; background:var(--surface3); margin:16px 0; }
+.chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px;
+  background:var(--surface2); border-radius:99px; font-size:11px; color:var(--text2); }
+.chip.active { background:var(--accent-dim); color:var(--accent); }
+.day-chips { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+.day-chip { width:36px; height:36px; border-radius:50%; background:var(--surface2);
+  border:1.5px solid var(--surface3); font-size:11px; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:var(--transition);
+  font-family:var(--font-am); color:var(--text2); }
+.day-chip.selected { background:var(--accent); border-color:var(--accent); color:#000; }
+
+.empty-state { text-align:center; padding:40px 20px; color:var(--text3); }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+
+.log-item { padding:10px 0; border-bottom:1px solid var(--surface3); }
+.log-item:last-child { border-bottom:none; }
+.log-date { font-size:11px; font-family:var(--font-mono); color:var(--text3); }
+.log-text { font-size:13px; color:var(--text); }
+
+.sport-history-item { display:flex; justify-content:space-between; align-items:center;
+  padding:10px 0; border-bottom:1px solid var(--surface3); }
+.sport-history-item:last-child { border-bottom:none; }
+
+.info-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; }
+.info-key { font-size:13px; color:var(--text2); }
+.info-val { font-size:13px; font-weight:700; font-family:var(--font-mono); color:var(--accent); }
+
+/* Loading indicator */
+.loading-ring {
+  width:40px; height:40px; border:3px solid var(--surface3);
+  border-top-color:var(--accent); border-radius:50%;
+  animation:spin 0.8s linear infinite; margin:20px auto;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Scrollable horizontal */
+.h-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none; }
+.h-scroll::-webkit-scrollbar { display:none; }
+
+/* Notification dot */
+.notif-dot { width:8px; height:8px; background:var(--danger); border-radius:50%;
+  position:absolute; top:4px; right:4px; }
+
+/* Range input */
+input[type=range] {
+  width:100%; accent-color:var(--accent); height:6px;
+  background:var(--surface3); border-radius:99px; outline:none; border:none;
+}
+
+/* Number input */
+input[type=number] { -moz-appearance:textfield; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+
+/* Color swatch */
+.theme-swatches { display:flex; gap:12px; margin:8px 0; }
+.swatch { width:40px; height:40px; border-radius:50%; cursor:pointer;
+  border:3px solid transparent; transition:var(--transition); }
+.swatch.selected { border-color:var(--text); transform:scale(1.15); }
+
+/* Progress ring */
+.progress-ring-wrap { position:relative; display:inline-flex; align-items:center;
+  justify-content:center; }
+.progress-ring { transform:rotate(-90deg); }
+.progress-ring-bg { fill:none; stroke:var(--surface3); stroke-width:8; }
+.progress-ring-fg { fill:none; stroke:var(--accent); stroke-width:8;
+  stroke-linecap:round; transition:stroke-dashoffset 0.6s ease; }
+.ring-center { position:absolute; text-align:center; }
+.ring-pct { font-family:var(--font-mono); font-size:22px; font-weight:700; color:var(--accent); }
+.ring-sub { font-size:11px; color:var(--text2); }
+
+/* Walk time picker */
+.time-picker-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; }
+.time-picker-label { font-size:13px; color:var(--text); }
+.time-picker-input { background:var(--surface2); border:1.5px solid var(--surface3);
+  border-radius:8px; color:var(--text); padding:6px 10px;
+  font-family:var(--font-mono); font-size:14px; outline:none; }
+.time-picker-input:focus { border-color:var(--accent); }
+
+/* Caffeine row */
+.caffeine-row { display:flex; align-items:center; justify-content:space-between; }
+.caffeine-btns { display:flex; gap:8px; align-items:center; }
+.caffeine-num { font-family:var(--font-mono); font-size:20px; font-weight:700; min-width:30px; text-align:center; }
+.icon-btn { width:36px; height:36px; border-radius:50%; background:var(--surface2);
+  border:1.5px solid var(--surface3); cursor:pointer; font-size:18px;
+  display:flex; align-items:center; justify-content:center; transition:var(--transition); }
+.icon-btn:active { transform:scale(0.9); }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">🌟</div>
+  <div class="splash-title">የአብዱ አፕ</div>
+  <div class="splash-quote" id="splash-quote">ዛሬ 17 ታስኮች አሉህ</div>
+  <div class="splash-sub" id="splash-sub">በጥዋት ታስኮችህን ጀምር!</div>
+</div>
+
+<!-- CONFETTI -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- EYE OVERLAY -->
+<div id="eye-overlay">
+  <div class="eye-icon">👁️</div>
+  <div class="eye-timer" id="eye-timer-display">20</div>
+  <div class="eye-txt">ከ6 ሜትር ርቀት ያለ ነገር ተመልከት</div>
+  <div class="eye-txt" style="font-size:12px;color:#666;">Eye Break — Look at something 6 meters away</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+
+  <!-- SCREENS -->
+  <div id="screens">
+
+    <!-- ═══ SCREEN 1: DASHBOARD ═══ -->
+    <div class="screen active" id="screen-home">
+      <div class="screen-header">
+        <div>
+          <div class="greeting" id="greeting">እንደምን ዋልክ፣ አብዱ!</div>
+          <div class="date-txt" id="today-date"></div>
+        </div>
+        <div style="font-size:32px;" id="streak-badge">🔥0</div>
+      </div>
+
+      <!-- Quote -->
+      <div class="quote-card card">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">📖 የዕለት ቃል</div>
+        <div class="quote-txt" id="daily-quote">ዛሬ ካልጀመርህ መቼ ትጀምራለህ?</div>
+      </div>
+
+      <!-- Overall Progress -->
+      <div class="card">
+        <div class="card-title">📊 አጠቃላይ ዕድገት</div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="progress-ring-wrap">
+            <svg class="progress-ring" width="90" height="90" viewBox="0 0 90 90">
+              <circle class="progress-ring-bg" cx="45" cy="45" r="37"/>
+              <circle class="progress-ring-fg" id="main-ring" cx="45" cy="45" r="37"
+                stroke-dasharray="232.5" stroke-dashoffset="232.5"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-pct" id="main-pct">0%</div>
+              <div class="ring-sub">ዛሬ</div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">
+              <span id="done-count">0</span>/17 ታስኮች
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-bar h12" id="main-progress" style="width:0%"></div>
+            </div>
+            <div class="progress-txt" id="main-progress-txt">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mood -->
+      <div class="card">
+        <div class="card-title">😊 ዛሬ ስሜቴ</div>
+        <div class="mood-row">
+          <button class="mood-btn" data-mood="5" onclick="setMood(5)">😄</button>
+          <button class="mood-btn" data-mood="4" onclick="setMood(4)">😊</button>
+          <button class="mood-btn" data-mood="3" onclick="setMood(3)">😐</button>
+          <button class="mood-btn" data-mood="2" onclick="setMood(2)">😔</button>
+          <button class="mood-btn" data-mood="1" onclick="setMood(1)">😤</button>
+        </div>
+      </div>
+
+      <!-- Water Quick -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-title" style="margin:0;">💧 ውሃ ዛሬ</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:var(--accent);" id="home-water-ml">0/2000ml</div>
+        </div>
+        <div class="cups-grid" id="home-cups"></div>
+        <div class="progress-wrap" style="margin-top:8px;">
+          <div class="progress-bar" id="home-water-bar" style="width:0%"></div>
+        </div>
+        <div id="caffeine-warn" style="display:none;margin-top:8px;padding:8px;background:rgba(231,76,60,0.15);border-radius:8px;font-size:12px;color:#E74C3C;">
+          ☕ ቡና ጠጣህ! +200ml ውሃ ጠጣ
+        </div>
+      </div>
+
+      <!-- Category Progress -->
+      <div class="card">
+        <div class="card-title">📋 የምድብ ዕድገት</div>
+        <div class="cat-grid" id="cat-grid"></div>
+      </div>
+
+    </div><!-- /screen-home -->
+
+    <!-- ═══ SCREEN 2: TASKS ═══ -->
+    <div class="screen" id="screen-tasks">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">📋 ታስኮች</div>
+          <div class="header-sub" id="tasks-sub">0/17 ተጠናቅቋል</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="toggleCarryOver()">↷ ዛወር</button>
+      </div>
+      <div id="tasks-container"></div>
+    </div><!-- /screen-tasks -->
+
+    <!-- ═══ SCREEN 3: HEALTH ═══ -->
+    <div class="screen" id="screen-health">
+      <div class="screen-header">
+        <div class="screen-title">💪 ጤና</div>
+      </div>
+      <div class="health-tabs">
+        <button class="health-tab active" onclick="showHealthTab('water')">💧 ውሃ</button>
+        <button class="health-tab" onclick="showHealthTab('walk')">🚶 እግር ጉዞ</button>
+        <button class="health-tab" onclick="showHealthTab('sport')">🏋️ ስፖርት</button>
+      </div>
+
+      <!-- WATER TAB -->
+      <div id="health-water" class="health-tab-content">
+        <div class="card">
+          <div class="card-title">💧 ዛሬ ውሃ</div>
+          <div style="text-align:center;font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--accent);margin:12px 0;" id="water-ml-big">0 ml</div>
+          <div class="progress-wrap" style="margin-bottom:8px;">
+            <div class="progress-bar h12" id="water-bar-big" style="width:0%"></div>
+          </div>
+          <div class="progress-txt" id="water-bar-txt">0 / 2000ml</div>
+          <div class="cups-grid" id="water-cups-grid" style="margin-top:16px;"></div>
+        </div>
+        <!-- Caffeine -->
+        <div class="card">
+          <div class="card-title">☕ ካፌይን ቆጠራ</div>
+          <div class="caffeine-row">
+            <div>
+              <div style="font-size:14px;font-weight:600;">ቡና ስንት ጊዜ?</div>
+              <div style="font-size:12px;color:var(--text2);">1 ቡና = +200ml ውሃ ማስጠንቀቂያ</div>
+            </div>
+            <div class="caffeine-btns">
+              <button class="icon-btn" onclick="changeCaffeine(-1)">−</button>
+              <div class="caffeine-num" id="caffeine-num">0</div>
+              <button class="icon-btn" onclick="changeCaffeine(1)">+</button>
+            </div>
+          </div>
+          <div id="caffeine-warn2" style="display:none;margin-top:8px;padding:8px;background:rgba(231,76,60,0.15);border-radius:8px;font-size:12px;color:#E74C3C;">
+            ☕ ቡና ጠጣህ! ተጨማሪ ውሃ ጠጣ
+          </div>
+        </div>
+        <!-- Alarm -->
+        <div class="card">
+          <div class="card-title">⏰ የውሃ አላርም (7am–4pm / 30 ደቂቃ)</div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">ውሃ አላርም</div>
+              <div class="toggle-desc">ሁሌ 30 ደቂቃ ጥቁ "Time to drink water!"</div>
+            </div>
+            <button class="toggle" id="water-alarm-toggle" onclick="toggleWaterAlarm()"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WALK TAB -->
+      <div id="health-walk" class="health-tab-content" style="display:none;">
+        <!-- Morning Walk -->
+        <div class="card">
+          <div class="card-title">🌅 የጠዋት እግር ጉዞ</div>
+          <div class="time-picker-row">
+            <div class="time-picker-label">አላርም ሰዓት</div>
+            <input type="time" class="time-picker-input" id="walk-am-time" value="06:30" onchange="saveWalkTime('am')">
+          </div>
+          <div class="walk-timer-display" id="walk-am-timer">25:00</div>
+          <div class="walk-stats">
+            <div class="walk-stat">
+              <div class="walk-stat-val" id="walk-am-steps">0</div>
+              <div class="walk-stat-lbl">እርምጃ</div>
+            </div>
+            <div class="walk-stat">
+              <div class="walk-stat-val" id="walk-am-cal">0</div>
+              <div class="walk-stat-lbl">ካሎሪ</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="walk-am-btn" onclick="startWalk('am')">🚶 ጉዞ ጀምር</button>
+            <button class="btn btn-outline" id="walk-am-done-btn" onclick="markWalkDone('am')" style="display:none;">✅ ጠናቀቅሁ</button>
+          </div>
+          <div id="walk-am-status" style="margin-top:8px;font-size:12px;color:var(--accent2);display:none;">✅ የጠዋት ጉዞ ተጠናቅቋል!</div>
+        </div>
+
+        <!-- Evening Walk -->
+        <div class="card">
+          <div class="card-title">🌙 የምሽት እግር ጉዞ</div>
+          <div class="time-picker-row">
+            <div class="time-picker-label">አላርም ሰዓት</div>
+            <input type="time" class="time-picker-input" id="walk-pm-time" value="18:30" onchange="saveWalkTime('pm')">
+          </div>
+          <div class="walk-timer-display" id="walk-pm-timer">25:00</div>
+          <div class="walk-stats">
+            <div class="walk-stat">
+              <div class="walk-stat-val" id="walk-pm-steps">0</div>
+              <div class="walk-stat-lbl">እርምጃ</div>
+            </div>
+            <div class="walk-stat">
+              <div class="walk-stat-val" id="walk-pm-cal">0</div>
+              <div class="walk-stat-lbl">ካሎሪ</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="walk-pm-btn" onclick="startWalk('pm')">🚶 ጉዞ ጀምር</button>
+            <button class="btn btn-outline" id="walk-pm-done-btn" onclick="markWalkDone('pm')" style="display:none;">✅ ጠናቀቅሁ</button>
+          </div>
+          <div id="walk-pm-status" style="margin-top:8px;font-size:12px;color:var(--accent2);display:none;">✅ የምሽት ጉዞ ተጠናቅቋል!</div>
+        </div>
+      </div>
+
+      <!-- SPORT TAB -->
+      <div id="health-sport" class="health-tab-content" style="display:none;">
+        <div class="card">
+          <div class="card-title">🏋️ ስፖርት ቅንብር</div>
+          <div class="form-group">
+            <label class="form-label">የስፖርት አይነት</label>
+            <select class="form-select" id="sport-type-sel" onchange="saveSportSettings()">
+              <option>ሩጫ</option><option>ዮጋ</option><option>ክብደት</option>
+              <option>ዋና</option><option>ብስክሌት</option><option>HIIT</option>
+            </select>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Sets</label>
+              <input type="number" class="form-input" id="sport-sets-inp" value="3" min="1" max="20" onchange="saveSportSettings()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reps</label>
+              <input type="number" class="form-input" id="sport-reps-inp" value="20" min="1" max="100" onchange="saveSportSettings()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ቀናት</label>
+            <div class="day-chips" id="sport-days-chips"></div>
+          </div>
+          <div class="time-picker-row">
+            <div class="time-picker-label">⏰ አላርም ሰዓት</div>
+            <input type="time" class="time-picker-input" id="sport-alarm-inp" value="06:00" onchange="saveSportSettings()">
+          </div>
+        </div>
+
+        <div class="card" id="sport-workout-card">
+          <div class="card-title">💪 ዛሬ ስፖርት</div>
+          <div id="sport-sets-display"></div>
+          <div id="rest-timer-wrap" style="display:none;text-align:center;margin:12px 0;">
+            <div style="font-size:13px;color:var(--text2);">⏱ የእረፍት ጊዜ</div>
+            <div class="walk-timer-display" id="rest-timer-display" style="font-size:40px;">60</div>
+          </div>
+          <div style="margin-top:12px;">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Personal Record 🏆</div>
+            <div style="font-family:var(--font-mono);font-size:16px;color:var(--accent);" id="sport-pr">0 ቀናት</div>
+          </div>
+          <button class="btn btn-success btn-full" style="margin-top:12px;" onclick="markSportDone()">✅ ዛሬ ስፖርት ሰርቻለሁ!</button>
+          <div id="sport-done-msg" style="display:none;text-align:center;margin-top:8px;color:var(--accent2);font-size:13px;">🎉 ስፖርት ተጠናቅቋል!</div>
+        </div>
+
+        <!-- History Graph -->
+        <div class="card">
+          <div class="card-title">📈 የስፖርት ታሪክ (ሳምንት)</div>
+          <div class="bar-chart" id="sport-history-chart"></div>
+        </div>
+      </div>
+
+    </div><!-- /screen-health -->
+
+    <!-- ═══ SCREEN 4: PROGRESS ═══ -->
+    <div class="screen" id="screen-progress">
+      <div class="screen-header">
+        <div class="screen-title">📊 እድገት</div>
+      </div>
+
+      <!-- Streak -->
+      <div class="card">
+        <div class="card-title">🔥 Streak</div>
+        <div class="streak-display">
+          <div class="streak-num" id="streak-num">0</div>
+          <div class="streak-txt">ተከታታይ ቀናት<br><span style="font-size:11px;color:var(--text3);">ዛሬ ሳይጠናቀቅ ይሰበራል!</span></div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-done">0</div>
+          <div class="stat-lbl">ዛሬ ✅</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">17</div>
+          <div class="stat-lbl">አጠቃላይ 📋</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-water">0ml</div>
+          <div class="stat-lbl">ዛሬ ውሃ 💧</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-pct">0%</div>
+          <div class="stat-lbl">አጠቃላይ 📊</div>
+        </div>
+      </div>
+
+      <!-- Weekly Bar -->
+      <div class="card">
+        <div class="card-title">📅 ሳምንታዊ ዕድገት</div>
+        <div class="bar-chart" id="weekly-chart"></div>
+      </div>
+
+      <!-- Monthly Calendar -->
+      <div class="card">
+        <div class="card-title">🗓 ወርሃዊ ካሌንደር</div>
+        <div class="calendar-grid" id="monthly-cal"></div>
+        <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;">
+          <span>🟢 80%+</span><span>🟡 50-79%</span><span>🔴 0-49%</span>
+        </div>
+      </div>
+
+      <!-- Category Progress -->
+      <div class="card">
+        <div class="card-title">📋 የምድብ ሚዛን</div>
+        <div id="cat-progress-list"></div>
+      </div>
+
+      <!-- Badges -->
+      <div class="card">
+        <div class="card-title">🏆 Badges</div>
+        <div class="badge-grid" id="badge-grid"></div>
+      </div>
+
+      <!-- Learning Log -->
+      <div class="card">
+        <div class="card-title">📚 Learning Log</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="text" class="form-input" id="learning-input" placeholder="ዛሬ የተማርኩት...">
+          <button class="btn btn-primary btn-sm" onclick="addLearning()">+</button>
+        </div>
+        <div id="learning-list"></div>
+      </div>
+
+      <!-- Books -->
+      <div class="card">
+        <div class="card-title">📖 መጽሐፍ ቆጠራ (ዓመት)</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="caffeine-btns">
+            <button class="icon-btn" onclick="changeBooks(-1)">−</button>
+            <div class="caffeine-num" id="books-num">0</div>
+            <button class="icon-btn" onclick="changeBooks(1)">+</button>
+          </div>
+          <div style="font-size:13px;color:var(--text2);">መጽሐፍ ዘንድሮ</div>
+        </div>
+      </div>
+
+      <!-- Tomorrow Priority -->
+      <div class="card">
+        <div class="card-title">🎯 ነገ ቁጥር 1 ትኩረት</div>
+        <input type="text" class="form-input" id="tomorrow-priority" placeholder="ነገ ምን ነው ቁጥር 1 ትኩረትህ?"
+          onchange="saveTomorrowPriority()">
+      </div>
+
+      <!-- Export -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-outline btn-sm" onclick="exportData()">📤 ዳታ ላክ</button>
+        <button class="btn btn-outline btn-sm" onclick="downloadReport()">📄 PDF ሪፖርት</button>
+      </div>
+
+    </div><!-- /screen-progress -->
+
+    <!-- ═══ SCREEN 5: SETTINGS ═══ -->
+    <div class="screen" id="screen-settings">
+      <div class="screen-header">
+        <div class="screen-title">⚙️ ቅንብር</div>
+      </div>
+
+      <!-- Profile -->
+      <div class="card">
+        <div class="card-title">👤 ግላዊ</div>
+        <div class="form-group">
+          <label class="form-label">ስም</label>
+          <input type="text" class="form-input" id="name-input" placeholder="ስምህን ጻፍ" onchange="saveName()">
+        </div>
+      </div>
+
+      <!-- Theme -->
+      <div class="card">
+        <div class="card-title">🎨 Theme</div>
+        <div class="theme-swatches">
+          <div class="swatch" style="background:#F5C842;" onclick="setTheme('gold')" id="swatch-gold"></div>
+          <div class="swatch" style="background:#2ECC71;" onclick="setTheme('green')" id="swatch-green"></div>
+          <div class="swatch" style="background:#3498DB;" onclick="setTheme('blue')" id="swatch-blue"></div>
+        </div>
+        <div class="toggle-row" style="margin-top:8px;">
+          <div class="toggle-info">
+            <div class="toggle-label">Light Mode</div>
+          </div>
+          <button class="toggle" id="light-toggle" onclick="toggleLightMode()"></button>
+        </div>
+      </div>
+
+      <!-- Alarms -->
+      <div class="card">
+        <div class="card-title">🔔 አላርሞች</div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">💧 ውሃ አላርም</div>
+            <div class="toggle-desc">30 ደቂቃ በ30 ደቂቃ (7am-4pm)</div>
+          </div>
+          <button class="toggle" id="t-water" onclick="toggleSetting('waterAlarm')"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">📏 ርቀት ማስጠንቀቂያ</div>
+            <div class="toggle-desc">ስልክ 40cm ርቀት</div>
+          </div>
+          <button class="toggle" id="t-dist" onclick="toggleSetting('distanceAlert')"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">👁️ 20-20-20 ህግ</div>
+            <div class="toggle-desc">ሁሌ 20 ደቂቃ ዓይን ዕረፍት</div>
+          </div>
+          <button class="toggle" id="t-eye" onclick="toggleSetting('eyeRule')"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">🌅 Gentle Wake</div>
+            <div class="toggle-desc">ድምፅ ቀስ ብሎ ይጀምራል</div>
+          </div>
+          <button class="toggle" id="t-gentle" onclick="toggleSetting('gentleWake')"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">🔔 ሁሉም አላርሞች</div>
+          </div>
+          <button class="toggle" id="t-all" onclick="toggleSetting('allAlarms')"></button>
+        </div>
+      </div>
+
+      <!-- Pomodoro -->
+      <div class="card">
+        <div class="card-title">⏱️ Pomodoro</div>
+        <div class="pomo-mode">
+          <button class="pomo-mode-btn active" id="pomo-work-btn" onclick="setPomoMode('work')">💼 ሥራ</button>
+          <button class="pomo-mode-btn" id="pomo-break-btn" onclick="setPomoMode('break')">☕ እረፍት</button>
+        </div>
+        <div class="pomo-display" id="pomo-display">25:00</div>
+        <div class="pomo-controls">
+          <button class="btn btn-primary" id="pomo-start-btn" onclick="togglePomo()">▶ ጀምር</button>
+          <button class="btn btn-outline" onclick="resetPomo()">↺ ዳግም</button>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="card">
+        <div class="card-title">💾 ዳታ</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="exportData()">📤 ላክ (JSON)</button>
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+            📥 አምጣ <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+          </label>
+          <button class="btn btn-danger btn-sm" onclick="clearAllData()">🗑️ ሁሉን ሰርዝ</button>
+        </div>
+      </div>
+
+      <!-- App Info -->
+      <div class="card">
+        <div class="card-title">ℹ️ ስለ አፑ</div>
+        <div class="info-row"><span class="info-key">አፕ ስም</span><span class="info-val">የአብዱ አፕ</span></div>
+        <div class="info-row"><span class="info-key">Version</span><span class="info-val">1.0.0</span></div>
+        <div class="info-row"><span class="info-key">Status</span><span class="info-val" style="color:var(--accent2);">PWA ✅</span></div>
+      </div>
+
+    </div><!-- /screen-settings -->
+
+  </div><!-- /screens -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" onclick="navigate('home')" id="nav-home">
+      <span class="nav-icon">🏠</span><span class="nav-label">መነሻ</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('tasks')" id="nav-tasks">
+      <span class="nav-icon">📋</span><span class="nav-label">ታስኮች</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('health')" id="nav-health">
+      <span class="nav-icon">💪</span><span class="nav-label">ጤና</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('progress')" id="nav-progress">
+      <span class="nav-icon">📊</span><span class="nav-label">እድገት</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('settings')" id="nav-settings">
+      <span class="nav-icon">⚙️</span><span class="nav-label">ቅንብር</span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="task-modal" onclick="closeTaskModal(event)">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="modal-title">➕ አዲስ ታስክ</div>
+    <div class="form-group">
+      <label class="form-label">ስም *</label>
+      <input type="text" class="form-input" id="task-name-inp" placeholder="ታስክ ስም">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ምድብ</label>
+      <select class="form-select" id="task-cat-inp">
+        <option value="morning">🌅 ጠዋት</option>
+        <option value="health">💪 ጤና</option>
+        <option value="knowledge">🧠 ዕውቀት</option>
+        <option value="evening">🌙 ምሽት</option>
+        <option value="pro">⚡ Pro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ቅድሚያ</label>
+      <select class="form-select" id="task-priority-inp">
+        <option value="3">⭐⭐⭐ ከፍተኛ</option>
+        <option value="2">⭐⭐ መካከለኛ</option>
+        <option value="1">⭐ ዝቅተኛ</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">⏰ አላርም ሰዓት</label>
+      <input type="time" class="form-input" id="task-time-inp">
+    </div>
+    <div class="form-group">
+      <label class="form-label">📝 ማስታወሻ</label>
+      <textarea class="form-textarea" id="task-note-inp" placeholder="ተጨማሪ ማስታወሻ..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">🔄 ድግግሞሽ</label>
+      <select class="form-select" id="task-repeat-inp">
+        <option value="daily">ዕለታዊ</option>
+        <option value="weekdays">ሰኞ-አርብ</option>
+        <option value="weekends">ቅዳሜ-እሁድ</option>
+        <option value="once">አንዴ ብቻ</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary btn-full" onclick="saveTask()">💾 አስቀምጥ</button>
+      <button class="btn btn-outline" onclick="closeTaskModal()" style="min-width:80px;">ሰርዝ</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK TIP MODAL -->
+<div class="modal-overlay" id="tip-modal" onclick="closeTipModal(event)">
+  <div class="bottom-sheet" style="text-align:center;">
+    <div class="sheet-handle"></div>
+    <div style="font-size:48px;margin-bottom:12px;" id="tip-icon">💡</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:8px;" id="tip-title">ጎበዝ!</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:20px;" id="tip-text">ታስክህን አጠናቀቅህ!</div>
+    <button class="btn btn-primary btn-full" onclick="closeTipModal()">👍 ጎበዝ!</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button id="fab" onclick="openTaskModal()">+</button>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// SERVICE WORKER REGISTRATION (INLINE)
+// ═══════════════════════════════════════════════════════
+const SW_CODE = `
+const CACHE = 'abdu-app-v1';
+self.addEventListener('install', e => {
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(clients.claim());
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => new Response('Offline'))));
+});
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'ALARM') {
+    // Background alarm handled
+    console.log('SW Alarm:', e.data.alarm);
+  }
+});
+`;
+
+if ('serviceWorker' in navigator) {
+  const blob = new Blob([SW_CODE], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(e => console.log('SW:', e));
+}
+
+// ═══════════════════════════════════════════════════════
+// MANIFEST (INLINE)
+// ═══════════════════════════════════════════════════════
+const manifest = {
+  name: "የአብዱ አፕ",
+  short_name: "አብዱ",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#0A0A0F",
+  theme_color: "#F5C842",
+  icons: [{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌟</text></svg>",sizes:"any",type:"image/svg+xml"}]
+};
+const manifestBlob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = URL.createObjectURL(manifestBlob);
+document.head.appendChild(manifestLink);
+
+// ═══════════════════════════════════════════════════════
+// CONSTANTS & DATA
+// ═══════════════════════════════════════════════════════
+const QUOTES = [
+  "ዛሬ ካልጀመርህ መቼ ትጀምራለህ?",
+  "ትንሽ ሩቲን ትልቅ ለውጥ ያመጣል።",
+  "ዛሬን ሙሉ ለሙሉ ኖር።",
+  "ምርጥ ኢንቬስትሜንት ጤናህ ነው።",
+  "ወጥ ጥረት ፈጽሞ ፍሬ ያሰጣል።",
+  "ዛሬ ያለፈ ቀን ዝም ብሎ አያልፍም።",
+  "ድርጊትህ ዕጣ ፈንታህን ይቆጣጠራል።"
+];
+
+const TIPS = {
+  morning: ["🌅 ጠዋት ምርጥ ጊዜ ነው! አዕምሮህ በጠዋት 40% ይበልጥ ይሰራል።", "💧 ጠዋት ውሃ ሜታቦሊዝምህን ያነቃዋል።"],
+  health: ["💪 ሩቲን ካልሆነ ስፖርት ዕቅዱ ብቻ ነው። ቀጥል!", "🏃 ቀን 30 ደቂቃ ብቻ ትልቅ ለውጥ ያመጣል።"],
+  knowledge: ["🧠 ቋንቋ መማር አዲስ ዓለም ይከፍታል!", "📚 ቀን 20 ደቂቃ ማንበብ ዓመቱን 12 መጽሐፍ ያሰጠዋል!"],
+  evening: ["🌙 ምሽት እቅድ ማውጣት ቀጣዩን ቀን 2x ያሻሽላል!", "✍️ Journal ስሜትህን ይፈውሳል።"],
+  pro: ["⚡ ቴክኖሎጂ ዕረፍት ፈጠራህን ያሻሽላል!", "🙏 ምስጋና ደስታ ይጨምራል - Science ተረጋግጧል!"]
+};
+
+const DEFAULT_TASKS = [
+  {id:'t1', title:'ውሃ ጠጣ (500ml)', category:'morning', priority:3, time:'07:00', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t2', title:'ጸሎት / ሜዲቴሽን', category:'morning', priority:3, time:'07:10', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t3', title:'የአካል ብቃት እንቅስቃሴ', category:'morning', priority:3, time:'07:30', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t4', title:'ማስታወሻ ደብተር ጻፍ', category:'morning', priority:2, time:'08:00', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t5', title:'መጽሐፍ አንብብ', category:'morning', priority:2, time:'08:20', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t6', title:'🚶 ጠዋትና ማታ 25 ደቂቃ መራመድ', category:'health', priority:3, time:'', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t7', title:'ውሃ 2-3 ሊትር', category:'health', priority:3, time:'', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t8', title:'7-8 ሰዓት እንቅልፍ', category:'health', priority:3, time:'22:00', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t9', title:'የትንፋሽ ልምምድ', category:'health', priority:2, time:'17:00', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t10', title:'ቋንቋ ተማር', category:'knowledge', priority:2, time:'09:30', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t11', title:'ፖድካስት / ቪዲዮ ተመልከት', category:'knowledge', priority:1, time:'', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t12', title:'የዕለት ማስታወሻ ክለሳ', category:'knowledge', priority:2, time:'', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t13', title:'እቅድ አውጣ ለማግስት', category:'evening', priority:3, time:'21:00', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t14', title:'ስልክ ዘጋ (30 ደቂቃ ቀደም)', category:'evening', priority:3, time:'21:30', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t15', title:'3 ጥሩ ነገሮች አስብ', category:'evening', priority:2, time:'21:45', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t16', title:'ከቴክኖሎጂ ዕረፍት', category:'pro', priority:1, time:'', note:'', done:false, completedAt:null, repeat:'daily'},
+  {id:'t17', title:'ምስጋና ገልጽ', category:'pro', priority:2, time:'', note:'', done:false, completedAt:null, repeat:'daily'},
+];
+
+const CAT_INFO = {
+  morning: {icon:'🌅', name:'ጠዋት'},
+  health:  {icon:'💪', name:'ጤና'},
+  knowledge:{icon:'🧠', name:'ዕውቀት'},
+  evening: {icon:'🌙', name:'ምሽት'},
+  pro:     {icon:'⚡', name:'Pro'}
+};
+
+const DAYS = ['ሰ','ማ','ረ','ሐ','አ','ቅ','እ'];
+const AM_DAYS = ['እሁድ','ሰኞ','ማክሰኞ','ረቡዕ','ሐሙስ','አርብ','ቅዳሜ'];
+const AM_MONTHS = ['ጃንዩወሪ','ፌብሩወሪ','ማርች','ኤፕሪል','ሜይ','ጁን','ጁላይ','ኦገስት','ሴፕቴምበር','ኦክቶበር','ኖቬምበር','ዲሴምበር'];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let state = {};
+let editingTaskId = null;
+let currentScreen = 'home';
+let currentHealthTab = 'water';
+
+// Walk timers
+let walkAmInterval = null, walkPmInterval = null;
+let walkAmSeconds = 1500, walkPmSeconds = 1500;
+let walkAmRunning = false, walkPmRunning = false;
+
+// Rest timer
+let restInterval = null, restSeconds = 60;
+let currentSportSet = 0;
+
+// Pomodoro
+let pomoInterval = null, pomoSeconds = 25*60;
+let pomoRunning = false, pomoMode = 'work';
+
+// Eye Rule
+let eyeInterval = null, eyeSeconds = 20*60;
+let eyeBreakInterval = null, eyeBreakSeconds = 20;
+let eyeRunning = false;
+
+// Alarm intervals
+let waterAlarmInterval = null;
+let taskAlarmIntervals = {};
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+function initState() {
+  const saved = localStorage.getItem('abdu_app');
+  if (saved) {
+    state = JSON.parse(saved);
+    checkDayReset();
+  } else {
+    state = {
+      name: 'አብዱ',
+      theme: 'gold',
+      darkMode: true,
+      tasks: JSON.parse(JSON.stringify(DEFAULT_TASKS)),
+      waterCups: Array(8).fill(false),
+      caffeineCount: 0,
+      sportType: 'ሩጫ',
+      sportSets: 3,
+      sportReps: 20,
+      sportDays: ['ሰ','ረ','አ'],
+      sportAlarmTime: '06:00',
+      sportDone: false,
+      sportHistory: [],
+      sportStreak: 0,
+      sportPR: 0,
+      walkAmTime: '06:30',
+      walkPmTime: '18:30',
+      walkAmDone: false,
+      walkPmDone: false,
+      walkSteps: 0,
+      walkCalories: 0,
+      streak: 0,
+      lastDate: '',
+      mood: null,
+      weeklyData: {},
+      monthlyData: {},
+      books: 0,
+      learningLog: [],
+      tomorrowPriority: '',
+      settings: {
+        distanceAlert: true,
+        eyeRule: true,
+        waterAlarm: true,
+        allAlarms: true,
+        gentleWake: true,
+        pomodoroMinutes: 25
+      }
+    };
+    saveState();
+  }
+}
+
+function saveState() {
+  localStorage.setItem('abdu_app', JSON.stringify(state));
+}
+
+function checkDayReset() {
+  const today = getTodayStr();
+  if (state.lastDate !== today) {
+    // Save yesterday's progress
+    if (state.lastDate) {
+      const doneCnt = state.tasks.filter(t=>t.done).length;
+      const pct = Math.round(doneCnt/17*100);
+      state.monthlyData[state.lastDate] = pct;
+
+      // Weekly
+      if (!state.weeklyData[state.lastDate]) {
+        state.weeklyData[state.lastDate] = pct;
+      }
+
+      // Streak
+      if (pct >= 50) {
+        state.streak = (state.streak || 0) + 1;
+      } else {
+        if (state.streak > 0) {
+          showToast('💔 Streak ተሰበረ! ዛሬ ደግ!');
+        }
+        state.streak = 0;
+      }
+
+      // Badges
+      checkBadges(pct);
+    }
+
+    // Carry over unfinished tasks
+    const carried = state.tasks.filter(t => !t.done && t.repeat !== 'once');
+    
+    // Reset all daily tasks
+    state.tasks = state.tasks.map(t => ({
+      ...t,
+      done: false,
+      completedAt: null
+    }));
+
+    // Reset daily state
+    state.waterCups = Array(8).fill(false);
+    state.caffeineCount = 0;
+    state.walkAmDone = false;
+    state.walkPmDone = false;
+    state.walkSteps = 0;
+    state.walkCalories = 0;
+    state.sportDone = false;
+    state.mood = null;
+    state.lastDate = today;
+    saveState();
+  }
+}
+
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function checkBadges(pct) {
+  if (!state.badges) state.badges = {};
+  if (pct >= 80) state.badges.bestDay = true;
+  // Best week check
+  const days = Object.values(state.weeklyData).slice(-7);
+  if (days.length === 7 && days.every(d => d >= 80)) state.badges.bestWeek = true;
+  // Best month
+  const monthDays = Object.values(state.monthlyData);
+  if (monthDays.length >= 28 && monthDays.filter(d=>d>=80).length >= 25) state.badges.bestMonth = true;
+}
+
+// ═══════════════════════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════════════════════
+function speak(text, gentle = false) {
+  if (!state.settings.allAlarms) return;
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'en-US';
+    utt.rate = 0.9;
+    if (gentle && state.settings.gentleWake) {
+      utt.volume = 0.1;
+      let vol = 0.1;
+      const inc = setInterval(() => {
+        vol = Math.min(1, vol + 0.1);
+        utt.volume = vol;
+        if (vol >= 1) clearInterval(inc);
+      }, 500);
+    } else {
+      utt.volume = 1;
+    }
+    window.speechSynthesis.speak(utt);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function navigate(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`screen-${screen}`).classList.add('active');
+  document.getElementById(`nav-${screen}`).classList.add('active');
+  currentScreen = screen;
+
+  // FAB only on tasks
+  const fab = document.getElementById('fab');
+  if (screen === 'tasks') {
+    fab.classList.remove('hidden');
+  } else {
+    fab.classList.add('hidden');
+  }
+
+  // Refresh views
+  if (screen === 'home') renderDashboard();
+  if (screen === 'tasks') renderTasks();
+  if (screen === 'progress') renderProgress();
+  if (screen === 'settings') renderSettings();
+  if (screen === 'health') renderHealth();
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDashboard() {
+  // Greeting
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'እንደምን ዋልክ' : h < 17 ? 'እንደምን ዋልህ' : 'እንደምን አደርህ';
+  document.getElementById('greeting').textContent = `${greet}፣ ${state.name}!`;
+
+  // Date
+  const d = new Date();
+  document.getElementById('today-date').textContent =
+    `${AM_DAYS[d.getDay()]}፣ ${d.getDate()} ${AM_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+  // Quote
+  const q = QUOTES[d.getDay() % QUOTES.length];
+  document.getElementById('daily-quote').textContent = q;
+
+  // Streak badge
+  document.getElementById('streak-badge').textContent = `🔥${state.streak}`;
+
+  // Progress
+  const done = state.tasks.filter(t=>t.done).length;
+  const pct = Math.round(done/17*100);
+  document.getElementById('done-count').textContent = done;
+  document.getElementById('main-progress').style.width = pct + '%';
+  document.getElementById('main-progress-txt').textContent = pct + '%';
+  document.getElementById('main-pct').textContent = pct + '%';
+
+  // Ring
+  const ring = document.getElementById('main-ring');
+  const circ = 232.5;
+  ring.style.strokeDashoffset = circ - (circ * pct / 100);
+
+  // Mood
+  document.querySelectorAll('.mood-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.mood) === state.mood);
+  });
+
+  // Water cups
+  renderHomeCups();
+
+  // Category cards
+  renderCatGrid();
+}
+
+function renderHomeCups() {
+  const grid = document.getElementById('home-cups');
+  grid.innerHTML = '';
+  state.waterCups.forEach((filled, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cup-btn' + (filled ? ' filled' : '');
+    btn.textContent = filled ? '🔵' : '💧';
+    btn.onclick = () => toggleCup(i);
+    grid.appendChild(btn);
+  });
+  const filledCount = state.waterCups.filter(Boolean).length;
+  const ml = filledCount * 250;
+  document.getElementById('home-water-ml').textContent = `${ml}/2000ml`;
+  document.getElementById('home-water-bar').style.width = Math.min(100, ml/20) + '%';
+  document.getElementById('caffeine-warn').style.display = state.caffeineCount > 0 ? 'block' : 'none';
+}
+
+function renderCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  Object.keys(CAT_INFO).forEach(cat => {
+    const tasks = state.tasks.filter(t => t.category === cat);
+    const done = tasks.filter(t=>t.done).length;
+    const pct = tasks.length ? Math.round(done/tasks.length*100) : 0;
+    const info = CAT_INFO[cat];
+    grid.innerHTML += `
+      <div class="cat-card">
+        <div class="cat-icon">${info.icon}</div>
+        <div class="cat-name">${info.name}</div>
+        <div class="cat-progress">${pct}%</div>
+        <div class="progress-wrap" style="margin-top:6px;">
+          <div class="progress-bar" style="width:${pct}%;height:6px;"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">${done}/${tasks.length}</div>
+      </div>`;
+  });
+}
+
+function setMood(m) {
+  state.mood = m;
+  saveState();
+  renderDashboard();
+  showToast(['','😤 ትንሽ እረፍት ወስድ!','😔 ጥሩ ይሆናል!','😐 ደህና ነው!','😊 ቆንጆ!','😄 አስደናቂ!'][m]);
+}
+
+// ═══════════════════════════════════════════════════════
+// TASKS
+// ═══════════════════════════════════════════════════════
+function renderTasks() {
+  const container = document.getElementById('tasks-container');
+  container.innerHTML = '';
+  const done = state.tasks.filter(t=>t.done).length;
+  document.getElementById('tasks-sub').textContent = `${done}/17 ተጠናቅቋል`;
+
+  Object.keys(CAT_INFO).forEach(cat => {
+    const tasks = state.tasks.filter(t => t.category === cat);
+    if (!tasks.length) return;
+    const info = CAT_INFO[cat];
+    const catDone = tasks.filter(t=>t.done).length;
+    let html = `<div class="category-section">
+      <div class="cat-header">
+        <span>${info.icon}</span>
+        <span>${info.name}</span>
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--text3);margin-left:auto;">${catDone}/${tasks.length}</span>
+      </div>`;
+    tasks.forEach(task => {
+      const stars = '⭐'.repeat(task.priority);
+      const timeTag = task.time ? `<span class="task-time-tag">${task.time}</span>` : '';
+      html += `
+        <div class="task-item${task.done?' done':''}" id="task-${task.id}">
+          <div class="task-check${task.done?' done':''}" onclick="toggleTask('${task.id}')">
+            ${task.done ? '✓' : ''}
+          </div>
+          <div class="task-info" onclick="editTask('${task.id}')">
+            <div class="task-title">${task.title}</div>
+            <div class="task-meta">
+              <span class="priority-star">${stars}</span>
+              ${timeTag}
+              ${task.completedAt ? `<span style="color:var(--accent2);">✅ ${task.completedAt}</span>` : ''}
+            </div>
+          </div>
+          <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;" onclick="deleteTask('${task.id}')">🗑</button>
+        </div>`;
+    });
+    html += '</div>';
+    container.innerHTML += html;
+  });
+}
+
+function toggleTask(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task) return;
+  task.done = !task.done;
+  if (task.done) {
+    const now = new Date();
+    task.completedAt = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+    launchConfetti();
+    showTip(task.category);
+    // Update streak data for today
+    const today = getTodayStr();
+    const doneCnt = state.tasks.filter(t=>t.done).length;
+    state.weeklyData[today] = Math.round(doneCnt/17*100);
+  } else {
+    task.completedAt = null;
+  }
+  saveState();
+  renderTasks();
+  renderDashboard();
+  renderProgress();
+}
+
+function deleteTask(id) {
+  if (!confirm('ይህን ታስክ ትሰርዛለህ?')) return;
+  state.tasks = state.tasks.filter(t=>t.id!==id);
+  saveState();
+  renderTasks();
+}
+
+function editTask(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task) return;
+  editingTaskId = id;
+  document.getElementById('modal-title').textContent = '✏️ ታስክ አስተካክል';
+  document.getElementById('task-name-inp').value = task.title;
+  document.getElementById('task-cat-inp').value = task.category;
+  document.getElementById('task-priority-inp').value = task.priority;
+  document.getElementById('task-time-inp').value = task.time || '';
+  document.getElementById('task-note-inp').value = task.note || '';
+  document.getElementById('task-repeat-inp').value = task.repeat || 'daily';
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function openTaskModal() {
+  editingTaskId = null;
+  document.getElementById('modal-title').textContent = '➕ አዲስ ታስክ';
+  document.getElementById('task-name-inp').value = '';
+  document.getElementById('task-cat-inp').value = 'morning';
+  document.getElementById('task-priority-inp').value = '2';
+  document.getElementById('task-time-inp').value = '';
+  document.getElementById('task-note-inp').value = '';
+  document.getElementById('task-repeat-inp').value = 'daily';
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function closeTaskModal(e) {
+  if (!e || e.target === document.getElementById('task-modal')) {
+    document.getElementById('task-modal').classList.remove('open');
+  }
+}
+
+function saveTask() {
+  const name = document.getElementById('task-name-inp').value.trim();
+  if (!name) { showToast('❌ ስም ጻፍ!'); return; }
+
+  if (editingTaskId) {
+    const task = state.tasks.find(t=>t.id===editingTaskId);
+    task.title = name;
+    task.category = document.getElementById('task-cat-inp').value;
+    task.priority = parseInt(document.getElementById('task-priority-inp').value);
+    task.time = document.getElementById('task-time-inp').value;
+    task.note = document.getElementById('task-note-inp').value;
+    task.repeat = document.getElementById('task-repeat-inp').value;
+  } else {
+    const task = {
+      id: 't' + Date.now(),
+      title: name,
+      category: document.getElementById('task-cat-inp').value,
+      priority: parseInt(document.getElementById('task-priority-inp').value),
+      time: document.getElementById('task-time-inp').value,
+      note: document.getElementById('task-note-inp').value,
+      done: false, completedAt: null,
+      repeat: document.getElementById('task-repeat-inp').value
+    };
+    state.tasks.push(task);
+  }
+  saveState();
+  closeTaskModal();
+  renderTasks();
+  showToast('✅ ታስክ ተቀምጧል!');
+}
+
+function toggleCarryOver() {
+  showToast('↷ ያልተጠናቀቁ ታስኮች ወደ ማግስት ሄደዋል!');
+}
+
+function showTip(cat) {
+  const tips = TIPS[cat] || TIPS.morning;
+  const tip = tips[Math.floor(Math.random()*tips.length)];
+  document.getElementById('tip-icon').textContent = CAT_INFO[cat]?.icon || '💡';
+  document.getElementById('tip-title').textContent = 'ጎበዝ! ታስክ አጠናቀቅህ!';
+  document.getElementById('tip-text').textContent = tip;
+  document.getElementById('tip-modal').classList.add('open');
+}
+
+function closeTipModal(e) {
+  if (!e || e.target === document.getElementById('tip-modal')) {
+    document.getElementById('tip-modal').classList.remove('open');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// WATER
+// ═══════════════════════════════════════════════════════
+function toggleCup(i) {
+  state.waterCups[i] = !state.waterCups[i];
+  saveState();
+  renderHomeCups();
+  renderWaterSection();
+}
+
+function renderWaterSection() {
+  const grid = document.getElementById('water-cups-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  state.waterCups.forEach((filled, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cup-btn' + (filled ? ' filled' : '');
+    btn.textContent = filled ? '🔵' : '💧';
+    btn.onclick = () => toggleCup(i);
+    grid.appendChild(btn);
+  });
+  const filledCount = state.waterCups.filter(Boolean).length;
+  const ml = filledCount * 250;
+  document.getElementById('water-ml-big').textContent = ml + ' ml';
+  const pct = Math.min(100, ml/20);
+  document.getElementById('water-bar-big').style.width = pct + '%';
+  document.getElementById('water-bar-txt').textContent = `${ml} / 2000ml`;
+  document.getElementById('caffeine-num').textContent = state.caffeineCount;
+  const warn = state.caffeineCount > 0;
+  document.getElementById('caffeine-warn2').style.display = warn ? 'block' : 'none';
+}
+
+function changeCaffeine(d) {
+  state.caffeineCount = Math.max(0, (state.caffeineCount||0) + d);
+  if (d > 0 && state.caffeineCount > 0) {
+    speak("Coffee detected! Drink an extra 200 milliliters of water.");
+    showToast('☕ ቡና ጠጣህ! +200ml ውሃ ጠጣ');
+  }
+  saveState();
+  renderWaterSection();
+  renderHomeCups();
+}
+
+function toggleWaterAlarm() {
+  state.settings.waterAlarm = !state.settings.waterAlarm;
+  const btn = document.getElementById('water-alarm-toggle');
+  btn.classList.toggle('on', state.settings.waterAlarm);
+  saveState();
+  if (state.settings.waterAlarm) startWaterAlarm();
+  else stopWaterAlarm();
+}
+
+// ═══════════════════════════════════════════════════════
+// HEALTH TABS
+// ═══════════════════════════════════════════════════════
+function showHealthTab(tab) {
+  document.querySelectorAll('.health-tab').forEach((b,i) => {
+    const tabs = ['water','walk','sport'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.health-tab-content').forEach(c => c.style.display = 'none');
+  document.getElementById(`health-${tab}`).style.display = 'block';
+  currentHealthTab = tab;
+  if (tab === 'water') renderWaterSection();
+  if (tab === 'walk') renderWalkSection();
+  if (tab === 'sport') renderSportSection();
+}
+
+function renderHealth() {
+  showHealthTab(currentHealthTab);
+}
+
+// ═══════════════════════════════════════════════════════
+// WALK
+// ═══════════════════════════════════════════════════════
+function renderWalkSection() {
+  document.getElementById('walk-am-time').value = state.walkAmTime || '06:30';
+  document.getElementById('walk-pm-time').value = state.walkPmTime || '18:30';
+
+  // AM status
+  if (state.walkAmDone) {
+    document.getElementById('walk-am-status').style.display = 'block';
+    document.getElementById('walk-am-btn').style.display = 'none';
+    document.getElementById('walk-am-done-btn').style.display = 'none';
+  }
+  // PM status
+  if (state.walkPmDone) {
+    document.getElementById('walk-pm-status').style.display = 'block';
+    document.getElementById('walk-pm-btn').style.display = 'none';
+    document.getElementById('walk-pm-done-btn').style.display = 'none';
+  }
+
+  document.getElementById('walk-am-steps').textContent = state.walkSteps || 0;
+  document.getElementById('walk-am-cal').textContent = Math.round((state.walkSteps||0) * 0.04);
+}
+
+function saveWalkTime(period) {
+  if (period === 'am') state.walkAmTime = document.getElementById('walk-am-time').value;
+  else state.walkPmTime = document.getElementById('walk-pm-time').value;
+  saveState();
+  showToast('✅ ሰዓት ተቀምጧል!');
+}
+
+function startWalk(period) {
+  const msg = period === 'am'
+    ? "Good morning! Time for your 25-minute walk."
+    : "Good evening! Time for your 25-minute walk.";
+  speak(msg, state.settings.gentleWake);
+
+  const btn = document.getElementById(`walk-${period}-btn`);
+  const doneBtn = document.getElementById(`walk-${period}-done-btn`);
+  btn.textContent = '⏸ ቆም';
+  btn.onclick = () => stopWalk(period);
+  doneBtn.style.display = 'inline-flex';
+
+  if (period === 'am') {
+    if (walkAmRunning) return;
+    walkAmRunning = true;
+    walkAmSeconds = 1500;
+    walkAmInterval = setInterval(() => {
+      walkAmSeconds--;
+      // Simulate steps (roughly 100 steps/min)
+      state.walkSteps = (state.walkSteps||0) + Math.floor(Math.random()*2+1);
+      document.getElementById('walk-am-steps').textContent = state.walkSteps;
+      document.getElementById('walk-am-cal').textContent = Math.round(state.walkSteps*0.04);
+      document.getElementById('walk-am-timer').textContent = formatTime(walkAmSeconds);
+      if (walkAmSeconds <= 0) {
+        clearInterval(walkAmInterval);
+        walkAmRunning = false;
+        speak("Well done! You have completed your 25-minute walk. Great job!");
+        launchConfetti();
+        markWalkDone('am');
+      }
+    }, 1000);
+  } else {
+    if (walkPmRunning) return;
+    walkPmRunning = true;
+    walkPmSeconds = 1500;
+    walkPmInterval = setInterval(() => {
+      walkPmSeconds--;
+      state.walkSteps = (state.walkSteps||0) + Math.floor(Math.random()*2+1);
+      document.getElementById('walk-pm-steps').textContent = state.walkSteps;
+      document.getElementById('walk-pm-cal').textContent = Math.round(state.walkSteps*0.04);
+      document.getElementById('walk-pm-timer').textContent = formatTime(walkPmSeconds);
+      if (walkPmSeconds <= 0) {
+        clearInterval(walkPmInterval);
+        walkPmRunning = false;
+        speak("Well done! You have completed your 25-minute walk. Great job!");
+        launchConfetti();
+        markWalkDone('pm');
+      }
+    }, 1000);
+  }
+}
+
+function stopWalk(period) {
+  if (period === 'am') { clearInterval(walkAmInterval); walkAmRunning = false; }
+  else { clearInterval(walkPmInterval); walkPmRunning = false; }
+  const btn = document.getElementById(`walk-${period}-btn`);
+  btn.textContent = '🚶 ጉዞ ጀምር';
+  btn.onclick = () => startWalk(period);
+}
+
+function markWalkDone(period) {
+  if (period === 'am') {
+    state.walkAmDone = true;
+    clearInterval(walkAmInterval);
+    walkAmRunning = false;
+    document.getElementById('walk-am-status').style.display = 'block';
+    document.getElementById('walk-am-btn').style.display = 'none';
+    document.getElementById('walk-am-done-btn').style.display = 'none';
+  } else {
+    state.walkPmDone = true;
+    clearInterval(walkPmInterval);
+    walkPmRunning = false;
+    document.getElementById('walk-pm-status').style.display = 'block';
+    document.getElementById('walk-pm-btn').style.display = 'none';
+    document.getElementById('walk-pm-done-btn').style.display = 'none';
+  }
+  saveState();
+  showToast('✅ የእግር ጉዞ ተጠናቅቋል!');
+}
+
+// ═══════════════════════════════════════════════════════
+// SPORT
+// ═══════════════════════════════════════════════════════
+function renderSportSection() {
+  document.getElementById('sport-type-sel').value = state.sportType;
+  document.getElementById('sport-sets-inp').value = state.sportSets;
+  document.getElementById('sport-reps-inp').value = state.sportReps;
+  document.getElementById('sport-alarm-inp').value = state.sportAlarmTime;
+
+  // Days chips
+  const chip = document.getElementById('sport-days-chips');
+  chip.innerHTML = '';
+  DAYS.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'day-chip' + (state.sportDays.includes(d) ? ' selected' : '');
+    el.textContent = d;
+    el.onclick = () => toggleSportDay(d);
+    chip.appendChild(el);
+  });
+
+  // Sets
+  renderSportSets();
+
+  // PR
+  document.getElementById('sport-pr').textContent = (state.sportPR||0) + ' ቀናት';
+
+  // Done msg
+  if (state.sportDone) {
+    document.getElementById('sport-done-msg').style.display = 'block';
+  }
+
+  // History chart
+  renderSportHistory();
+}
+
+function renderSportSets() {
+  const disp = document.getElementById('sport-sets-display');
+  disp.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'sport-sets-grid';
+  for (let i=0; i<state.sportSets; i++) {
+    const btn = document.createElement('div');
+    btn.className = 'set-btn' + (currentSportSet > i ? ' done' : '');
+    btn.innerHTML = `Set ${i+1}<br><small>${state.sportReps} reps</small>`;
+    btn.onclick = () => completeSportSet(i);
+    grid.appendChild(btn);
+  }
+  disp.appendChild(grid);
+}
+
+function completeSportSet(i) {
+  if (i !== currentSportSet) return;
+  currentSportSet++;
+  renderSportSets();
+  if (currentSportSet < state.sportSets) {
+    startRestTimer();
+  }
+}
+
+function startRestTimer() {
+  restSeconds = 60;
+  document.getElementById('rest-timer-wrap').style.display = 'block';
+  clearInterval(restInterval);
+  restInterval = setInterval(() => {
+    restSeconds--;
+    document.getElementById('rest-timer-display').textContent = restSeconds;
+    if (restSeconds <= 0) {
+      clearInterval(restInterval);
+      document.getElementById('rest-timer-wrap').style.display = 'none';
+      speak("Rest complete. Start your next set!");
+      showToast('💪 ቀጣይ Set ጀምር!');
+    }
+  }, 1000);
+}
+
+function markSportDone() {
+  state.sportDone = true;
+  state.sportStreak = (state.sportStreak||0) + 1;
+  if (state.sportStreak > (state.sportPR||0)) state.sportPR = state.sportStreak;
+  const today = getTodayStr();
+  if (!state.sportHistory) state.sportHistory = [];
+  state.sportHistory.push({date: today, type: state.sportType});
+  if (state.sportHistory.length > 30) state.sportHistory.shift();
+  saveState();
+  launchConfetti();
+  speak("Great job! Workout complete!");
+  showToast('🎉 ስፖርት ተጠናቅቋል!');
+  document.getElementById('sport-done-msg').style.display = 'block';
+  document.getElementById('sport-pr').textContent = (state.sportPR||0) + ' ቀናት';
+  renderSportHistory();
+}
+
+function renderSportHistory() {
+  const chart = document.getElementById('sport-history-chart');
+  if (!chart) return;
+  chart.innerHTML = '';
+  const days7 = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const done = (state.sportHistory||[]).some(h=>h.date===str);
+    days7.push({str, done, lbl: DAYS[(d.getDay()+1)%7]});
+  }
+  days7.forEach(day => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = day.done ? '80px' : '10px';
+    bar.style.background = day.done ? 'var(--accent)' : 'var(--surface3)';
+    const lbl = document.createElement('div');
+    lbl.className = 'bar-lbl';
+    lbl.textContent = day.lbl;
+    col.appendChild(bar);
+    col.appendChild(lbl);
+    chart.appendChild(col);
+  });
+}
+
+function toggleSportDay(d) {
+  if (state.sportDays.includes(d)) {
+    state.sportDays = state.sportDays.filter(x=>x!==d);
+  } else {
+    state.sportDays.push(d);
+  }
+  saveState();
+  renderSportSection();
+}
+
+function saveSportSettings() {
+  state.sportType = document.getElementById('sport-type-sel').value;
+  state.sportSets = parseInt(document.getElementById('sport-sets-inp').value) || 3;
+  state.sportReps = parseInt(document.getElementById('sport-reps-inp').value) || 20;
+  state.sportAlarmTime = document.getElementById('sport-alarm-inp').value;
+  saveState();
+  renderSportSets();
+}
+
+// ═══════════════════════════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════════════════════════
+function renderProgress() {
+  // Streak
+  document.getElementById('streak-num').textContent = state.streak || 0;
+
+  // Stats
+  const done = state.tasks.filter(t=>t.done).length;
+  const pct = Math.round(done/17*100);
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-water').textContent = (state.waterCups.filter(Boolean).length * 250) + 'ml';
+  document.getElementById('stat-pct').textContent = pct + '%';
+
+  // Weekly chart
+  renderWeeklyChart();
+
+  // Monthly calendar
+  renderMonthlyCalendar();
+
+  // Category progress
+  renderCatProgressList();
+
+  // Badges
+  renderBadges();
+
+  // Learning log
+  renderLearningLog();
+
+  // Books
+  document.getElementById('books-num').textContent = state.books || 0;
+
+  // Tomorrow priority
+  document.getElementById('tomorrow-priority').value = state.tomorrowPriority || '';
+}
+
+function renderWeeklyChart() {
+  const chart = document.getElementById('weekly-chart');
+  chart.innerHTML = '';
+  for (let i=6; i>=0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const pct = i===0
+      ? Math.round(state.tasks.filter(t=>t.done).length/17*100)
+      : (state.weeklyData[str] || 0);
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = Math.max(4, pct * 1.2) + 'px';
+    const lbl = document.createElement('div');
+    lbl.className = 'bar-lbl';
+    lbl.textContent = DAYS[(d.getDay()+1)%7];
+    const val = document.createElement('div');
+    val.className = 'bar-val';
+    val.textContent = pct + '%';
+    col.appendChild(bar);
+    col.appendChild(lbl);
+    col.appendChild(val);
+    chart.appendChild(col);
+  }
+}
+
+function renderMonthlyCalendar() {
+  const cal = document.getElementById('monthly-cal');
+  cal.innerHTML = '';
+  const d = new Date();
+  const year = d.getFullYear(), month = d.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  // Day labels
+  DAYS.forEach(day => {
+    const el = document.createElement('div');
+    el.style.cssText = 'text-align:center;font-size:10px;color:var(--text3);';
+    el.textContent = day;
+    cal.appendChild(el);
+  });
+
+  // Start offset
+  const firstDay = new Date(year, month, 1).getDay();
+  for (let i=0; i<firstDay; i++) {
+    const el = document.createElement('div');
+    cal.appendChild(el);
+  }
+
+  for (let day=1; day<=daysInMonth; day++) {
+    const str = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const pct = day === d.getDate() ? Math.round(state.tasks.filter(t=>t.done).length/17*100)
+      : (state.monthlyData[str] || -1);
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = day;
+    if (pct >= 80) el.classList.add('good');
+    else if (pct >= 50) el.classList.add('mid');
+    else if (pct >= 0) el.classList.add('bad');
+    cal.appendChild(el);
+  }
+}
+
+function renderCatProgressList() {
+  const list = document.getElementById('cat-progress-list');
+  list.innerHTML = '';
+  Object.keys(CAT_INFO).forEach(cat => {
+    const tasks = state.tasks.filter(t=>t.category===cat);
+    const done = tasks.filter(t=>t.done).length;
+    const pct = tasks.length ? Math.round(done/tasks.length*100) : 0;
+    const info = CAT_INFO[cat];
+    list.innerHTML += `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;">${info.icon} ${info.name}</span>
+          <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent);">${pct}%</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar" style="width:${pct}%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${done}/${tasks.length}</div>
+      </div>`;
+  });
+}
+
+function renderBadges() {
+  const grid = document.getElementById('badge-grid');
+  const badges = state.badges || {};
+  grid.innerHTML = `
+    <div class="badge${badges.bestDay?' earned':''}">🏆 ምርጥ ቀን</div>
+    <div class="badge${badges.bestWeek?' earned':''}">🌟 ምርጥ ሳምንት</div>
+    <div class="badge${badges.bestMonth?' earned':''}">👑 ምርጥ ወር</div>
+    <div class="badge${state.streak>=7?' earned':''}">🔥 7 ቀን Streak</div>
+    <div class="badge${state.streak>=30?' earned':''}">💎 30 ቀን Streak</div>
+    <div class="badge${(state.books||0)>=12?' earned':''}">📚 12 መጽሐፍ</div>
+  `;
+}
+
+function renderLearningLog() {
+  const list = document.getElementById('learning-list');
+  const logs = state.learningLog || [];
+  list.innerHTML = logs.slice(-5).reverse().map(l => `
+    <div class="log-item">
+      <div class="log-date">${l.date}</div>
+      <div class="log-text">${l.text}</div>
+    </div>`).join('') || '<div style="color:var(--text3);font-size:13px;">ምንም የለም</div>';
+}
+
+function addLearning() {
+  const inp = document.getElementById('learning-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  if (!state.learningLog) state.learningLog = [];
+  state.learningLog.push({date: getTodayStr(), text});
+  inp.value = '';
+  saveState();
+  renderLearningLog();
+  showToast('📚 ተመዘገበ!');
+}
+
+function changeBooks(d) {
+  state.books = Math.max(0, (state.books||0) + d);
+  saveState();
+  document.getElementById('books-num').textContent = state.books;
+}
+
+function saveTomorrowPriority() {
+  state.tomorrowPriority = document.getElementById('tomorrow-priority').value;
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════
+function renderSettings() {
+  document.getElementById('name-input').value = state.name || 'አብዱ';
+
+  // Theme swatches
+  ['gold','green','blue'].forEach(t => {
+    document.getElementById(`swatch-${t}`)?.classList.toggle('selected', state.theme===t);
+  });
+
+  // Light mode
+  document.getElementById('light-toggle')?.classList.toggle('on', !state.darkMode);
+
+  // Toggles
+  const s = state.settings;
+  document.getElementById('t-water')?.classList.toggle('on', s.waterAlarm);
+  document.getElementById('t-dist')?.classList.toggle('on', s.distanceAlert);
+  document.getElementById('t-eye')?.classList.toggle('on', s.eyeRule);
+  document.getElementById('t-gentle')?.classList.toggle('on', s.gentleWake);
+  document.getElementById('t-all')?.classList.toggle('on', s.allAlarms);
+  document.getElementById('water-alarm-toggle')?.classList.toggle('on', s.waterAlarm);
+}
+
+function saveName() {
+  state.name = document.getElementById('name-input').value || 'አብዱ';
+  saveState();
+  renderDashboard();
+  showToast('✅ ስም ተቀምጧል!');
+}
+
+function setTheme(t) {
+  state.theme = t;
+  saveState();
+  applyTheme();
+  renderSettings();
+}
+
+function applyTheme() {
+  document.body.className = '';
+  if (state.theme === 'green') document.body.classList.add('theme-green');
+  if (state.theme === 'blue') document.body.classList.add('theme-blue');
+  if (!state.darkMode) document.body.classList.add('light-mode');
+}
+
+function toggleLightMode() {
+  state.darkMode = !state.darkMode;
+  saveState();
+  applyTheme();
+  renderSettings();
+}
+
+function toggleSetting(key) {
+  state.settings[key] = !state.settings[key];
+  saveState();
+  renderSettings();
+
+  if (key === 'waterAlarm') {
+    if (state.settings.waterAlarm) startWaterAlarm();
+    else stopWaterAlarm();
+  }
+  if (key === 'eyeRule') {
+    if (state.settings.eyeRule) startEyeRule();
+    else stopEyeRule();
+  }
+  if (key === 'distanceAlert' && state.settings.distanceAlert) {
+    speak("Please hold your phone at least 40 centimeters away from your eyes.");
+  }
+}
+
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `abdu-app-${getTodayStr()}.json`;
+  a.click();
+  showToast('📤 ዳታ ተልኳል!');
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      state = JSON.parse(ev.target.result);
+      saveState();
+      applyTheme();
+      renderDashboard();
+      showToast('📥 ዳታ ተጭኗል!');
+    } catch(err) {
+      showToast('❌ ፋይሉ ትክክለኛ አይደለም!');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('ሁሉም ዳታ ይሰረዛል? ይህ ሊመለስ አይችልም!')) return;
+  localStorage.removeItem('abdu_app');
+  location.reload();
+}
+
+function downloadReport() {
+  const done = state.tasks.filter(t=>t.done).length;
+  const pct = Math.round(done/17*100);
+  const report = `የአብዱ አፕ - ወርሃዊ ሪፖርት
+=========================
+ቀን: ${getTodayStr()}
+ስም: ${state.name}
+Streak: ${state.streak} ቀናት
+ዛሬ ተጠናቀቁ: ${done}/17 (${pct}%)
+ዛሬ ውሃ: ${state.waterCups.filter(Boolean).length * 250}ml
+መጽሐፍ: ${state.books}
+=========================`;
+  const blob = new Blob([report], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `abdu-report-${getTodayStr()}.txt`;
+  a.click();
+  showToast('📄 ሪፖርት ወረደ!');
+}
+
+// ═══════════════════════════════════════════════════════
+// POMODORO
+// ═══════════════════════════════════════════════════════
+function setPomoMode(mode) {
+  pomoMode = mode;
+  pomoRunning = false;
+  clearInterval(pomoInterval);
+  document.getElementById('pomo-work-btn').classList.toggle('active', mode==='work');
+  document.getElementById('pomo-break-btn').classList.toggle('active', mode==='break');
+  resetPomo();
+}
+
+function resetPomo() {
+  clearInterval(pomoInterval);
+  pomoRunning = false;
+  pomoSeconds = (pomoMode === 'work' ? (state.settings.pomodoroMinutes||25) : 5) * 60;
+  document.getElementById('pomo-display').textContent = formatTime(pomoSeconds);
+  document.getElementById('pomo-start-btn').textContent = '▶ ጀምር';
+}
+
+function togglePomo() {
+  if (pomoRunning) {
+    clearInterval(pomoInterval);
+    pomoRunning = false;
+    document.getElementById('pomo-start-btn').textContent = '▶ ጀምር';
+  } else {
+    pomoRunning = true;
+    document.getElementById('pomo-start-btn').textContent = '⏸ ቆም';
+    pomoInterval = setInterval(() => {
+      pomoSeconds--;
+      document.getElementById('pomo-display').textContent = formatTime(pomoSeconds);
+      if (pomoSeconds <= 0) {
+        clearInterval(pomoInterval);
+        pomoRunning = false;
+        if (pomoMode === 'work') {
+          speak("Well done! Take a 5-minute break.");
+          showToast('⏱ Pomodoro ጠናቀቀ! 5 ደቂቃ ዕረፍት');
+          setPomoMode('break');
+        } else {
+          speak("Break time is over. Let's get back to work!");
+          showToast('☕ ዕረፍት አለቀ! ሥራ ጀምር');
+          setPomoMode('work');
+        }
+      }
+    }, 1000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ALARMS
+// ═══════════════════════════════════════════════════════
+function startWaterAlarm() {
+  stopWaterAlarm();
+  if (!state.settings.waterAlarm || !state.settings.allAlarms) return;
+  waterAlarmInterval = setInterval(() => {
+    const h = new Date().getHours();
+    if (h >= 7 && h < 16) {
+      const filled = state.waterCups.filter(Boolean).length;
+      if (filled < 8) {
+        speak("Time to drink water! Stay hydrated.");
+        showToast('💧 ውሃ ሰዓቱ ነው!');
+      }
+    }
+  }, 30 * 60 * 1000); // 30 minutes
+}
+
+function stopWaterAlarm() {
+  if (waterAlarmInterval) clearInterval(waterAlarmInterval);
+}
+
+function startEyeRule() {
+  stopEyeRule();
+  if (!state.settings.eyeRule || !state.settings.allAlarms) return;
+  eyeSeconds = 20 * 60;
+  eyeRunning = true;
+  eyeInterval = setInterval(() => {
+    eyeSeconds--;
+    if (eyeSeconds <= 0) {
+      clearInterval(eyeInterval);
+      triggerEyeBreak();
+    }
+  }, 1000);
+}
+
+function stopEyeRule() {
+  clearInterval(eyeInterval);
+  clearInterval(eyeBreakInterval);
+  eyeRunning = false;
+  document.getElementById('eye-overlay').classList.remove('show');
+}
+
+function triggerEyeBreak() {
+  speak("Eye break! Look at something 6 meters away for 20 seconds.");
+  document.getElementById('eye-overlay').classList.add('show');
+  eyeBreakSeconds = 20;
+  document.getElementById('eye-timer-display').textContent = eyeBreakSeconds;
+  eyeBreakInterval = setInterval(() => {
+    eyeBreakSeconds--;
+    document.getElementById('eye-timer-display').textContent = eyeBreakSeconds;
+    if (eyeBreakSeconds <= 0) {
+      clearInterval(eyeBreakInterval);
+      document.getElementById('eye-overlay').classList.remove('show');
+      showToast('👁️ ጎበዝ! ዓይን ዕረፍት ጠናቀቀ');
+      startEyeRule(); // restart 20 min cycle
+    }
+  }, 1000);
+}
+
+function startTaskAlarms() {
+  // Check task alarms every minute
+  setInterval(() => {
+    if (!state.settings.allAlarms) return;
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    state.tasks.forEach(task => {
+      if (task.time === timeStr && !task.done) {
+        speak(`Reminder! It's time for: ${task.title}`);
+        showToast(`⏰ ${task.title}`);
+      }
+    });
+
+    // Walk alarms
+    if (state.walkAmTime === timeStr && !state.walkAmDone) {
+      speak("Good morning! Time for your 25-minute walk.", state.settings.gentleWake);
+      showToast('🚶 የጠዋት እግር ጉዞ ሰዓቱ ነው!');
+    }
+    if (state.walkPmTime === timeStr && !state.walkPmDone) {
+      speak("Good evening! Time for your 25-minute walk.");
+      showToast('🚶 የምሽት እግር ጉዞ ሰዓቱ ነው!');
+    }
+
+    // Sport alarm
+    const todayDay = DAYS[(now.getDay()+1)%7];
+    if (state.sportAlarmTime === timeStr && state.sportDays.includes(todayDay) && !state.sportDone) {
+      speak("It's workout time! Let's go!");
+      showToast('🏋️ የስፖርት ሰዓቱ ነው!');
+    }
+
+    // Distance alert once per hour on the hour
+    if (now.getMinutes() === 0 && state.settings.distanceAlert) {
+      speak("Please hold your phone at least 40 centimeters away from your eyes.");
+    }
+
+    // Tomorrow priority at 21:00
+    if (now.getHours() === 21 && now.getMinutes() === 0) {
+      showToast('🎯 ነገ ምን ነው ቁጥር 1 ትኩረትህ?');
+    }
+  }, 60 * 1000);
+}
+
+// ═══════════════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════════════
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const pieces = [];
+  const colors = ['#F5C842','#2ECC71','#3498DB','#E74C3C','#9B59B6','#F39C12'];
+
+  for (let i=0; i<120; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: -20,
+      w: Math.random() * 10 + 5,
+      h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      vx: (Math.random()-0.5) * 4,
+      vy: Math.random() * 5 + 2,
+      rot: Math.random() * 360,
+      rotV: (Math.random()-0.5) * 6,
+      life: 1
+    });
+  }
+
+  let frame;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach((p,i) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.rotV;
+      p.vy += 0.1;
+      p.life -= 0.008;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    if (pieces.some(p => p.life > 0)) {
+      frame = requestAnimationFrame(draw);
+    } else {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+  if (frame) cancelAnimationFrame(frame);
+  draw();
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function formatTime(sec) {
+  const m = Math.floor(sec/60);
+  const s = sec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function showToast(msg, duration=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ═══════════════════════════════════════════════════════
+// SPLASH SCREEN
+// ═══════════════════════════════════════════════════════
+function showSplash() {
+  const done = state.tasks.filter(t=>t.done).length;
+  const remaining = 17 - done;
+  document.getElementById('splash-quote').textContent = `ዛሬ ${remaining} ታስኮች ይጠብቁሃል!`;
+  const quotes = QUOTES;
+  document.getElementById('splash-sub').textContent = quotes[new Date().getDay() % quotes.length];
+
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+    document.getElementById('app').style.display = 'flex';
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+    }, 700);
+
+    // Distance alert on open
+    if (state.settings.distanceAlert && state.settings.allAlarms) {
+      setTimeout(() => {
+        speak("Please hold your phone at least 40 centimeters away from your eyes.");
+      }, 1000);
+    }
+  }, 2500);
+}
+
+// ═══════════════════════════════════════════════════════
+// STARTUP
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initState();
+  applyTheme();
+  showSplash();
+
+  // Initial render
+  renderDashboard();
+  renderTasks();
+
+  // Start background processes
+  startWaterAlarm();
+  startEyeRule();
+  startTaskAlarms();
+
+  // Pomodoro init
+  resetPomo();
+
+  // Request notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // Keep screen awake attempt
+  if ('wakeLock' in navigator) {
+    navigator.wakeLock.request('screen').catch(()=>{});
+  }
+});
+
+// Visibility change — restart alarms when coming back
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    checkDayReset();
+    renderDashboard();
+    if (currentScreen === 'tasks') renderTasks();
+    if (currentScreen === 'progress') renderProgress();
+  }
+});
+
+// Handle beforeinstallprompt for PWA install
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showToast('📲 አፑን ለማስቀመጥ ➕ ተጫን', 5000);
+});
+</script>
+</body>
+</html>
