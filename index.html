@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="am" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="የአብዱ አፕ">
+<meta name="description" content="የዕለት ሩቲን፣ ጤና፣ ዕቅድ PWA">
+<title>የአብዱ አፕ</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230A0A0F'/%3E%3Ctext x='256' y='380' text-anchor='middle' font-size='380' font-family='Apple Color Emoji%2CSegoe UI Emoji%2Csans-serif'%3E%F0%9F%8C%9F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ════════════════════════════════════════════════
+   CSS VARIABLES
+════════════════════════════════════════════════ */
+:root {
+  --bg:         #0A0A0F;
+  --surface:    #13131A;
+  --surface2:   #1C1C26;
+  --surface3:   #252530;
+  --accent:     #F5C842;
+  --accent-dim: rgba(245,200,66,0.15);
+  --accent2:    #2ECC71;
+  --accent3:    #3498DB;
+  --text:       #F0F0F5;
+  --text2:      #A0A0B0;
+  --text3:      #606070;
+  --danger:     #E74C3C;
+  --warning:    #F39C12;
+  --radius:     16px;
+  --radius-sm:  10px;
+  --nav-h:      70px;
+  --font-am:    'Noto Sans Ethiopic', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+  --shadow:     0 4px 24px rgba(0,0,0,0.4);
+  --spring:     cubic-bezier(0.34,1.56,0.64,1);
+}
+.theme-green { --accent:#2ECC71; --accent-dim:rgba(46,204,113,0.15); }
+.theme-blue  { --accent:#3498DB; --accent-dim:rgba(52,152,219,0.15); }
+.light-mode  {
+  --bg:#F2F2F7; --surface:#FFF; --surface2:#EBEBF0;
+  --surface3:#DCDCE5; --text:#0D0D14; --text2:#505060; --text3:#A0A0B0;
+}
+
+/* ════ RESET ════════════════════════════════════ */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body {
+  height:100%; overflow:hidden;
+  background:var(--bg); color:var(--text);
+  font-family:var(--font-am); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ════ SPLASH ════════════════════════════════════ */
+#splash {
+  position:fixed; inset:0; z-index:9999;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:16px;
+  transition:opacity .6s ease, transform .6s ease;
+}
+#splash.hide { opacity:0; transform:scale(1.05); pointer-events:none; }
+.sp-logo  { font-size:80px; animation:spP 2s ease infinite; }
+.sp-title { font-size:28px; font-weight:900; color:var(--accent); }
+.sp-quote {
+  font-size:13px; color:var(--accent); text-align:center;
+  max-width:280px; padding:14px 16px;
+  background:var(--accent-dim); border:1px solid var(--accent);
+  border-radius:var(--radius); line-height:1.65;
+}
+.sp-sub   { font-size:13px; color:var(--text2); }
+.sp-bar   { width:150px; height:4px; background:var(--surface3); border-radius:99px; overflow:hidden; }
+.sp-fill  { height:100%; width:0; background:var(--accent); border-radius:99px; animation:spF 2.5s ease forwards; }
+@keyframes spP { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+@keyframes spF { to { width:100%; } }
+
+/* ════ APP ════════════════════════════════════════ */
+#app { height:100%; display:flex; flex-direction:column; }
+#screens { flex:1; overflow:hidden; position:relative; }
+
+/* ════ SCREEN ════════════════════════════════════ */
+.screen {
+  position:absolute; inset:0;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:16px 16px calc(var(--nav-h) + 20px);
+  opacity:0; transform:translateX(32px); pointer-events:none;
+  transition:opacity .3s ease, transform .3s ease;
+  scrollbar-width:none;
+}
+.screen::-webkit-scrollbar { display:none; }
+.screen.active { opacity:1; transform:translateX(0); pointer-events:auto; }
+
+/* ════ BOTTOM NAV ═══════════════════════════════ */
+#bnav {
+  position:fixed; bottom:0; left:0; right:0;
+  height:var(--nav-h);
+  background:var(--surface); border-top:1px solid var(--surface3);
+  display:flex; align-items:center; justify-content:space-around;
+  padding-bottom:env(safe-area-inset-bottom, 6px);
+  z-index:100;
+}
+.nb {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 10px; border:none; background:transparent;
+  cursor:pointer; color:var(--text3);
+  transition:color .25s; font-family:var(--font-am); min-width:50px;
+}
+.nb.on { color:var(--accent); }
+.nb.on .ni { transform:translateY(-4px) scale(1.2); }
+.ni { font-size:22px; display:block; transition:transform .3s var(--spring); }
+.nl { font-size:10px; font-weight:700; }
+
+/* ════ CARD ══════════════════════════════════════ */
+.card {
+  background:var(--surface); border-radius:var(--radius);
+  padding:16px; margin-bottom:12px;
+  border:1px solid var(--surface3); box-shadow:var(--shadow);
+}
+.ct { font-size:11px; font-weight:700; color:var(--text2); margin-bottom:12px; text-transform:uppercase; letter-spacing:.8px; }
+
+/* ════ PROGRESS BAR ══════════════════════════════ */
+.pw { background:var(--surface3); border-radius:99px; overflow:hidden; }
+.pb { height:8px; background:var(--accent); border-radius:99px; transition:width .5s var(--spring); }
+.pb.h12 { height:12px; }
+.pb.h6  { height:6px; }
+.pt { font-family:var(--font-mono); font-size:12px; color:var(--text2); text-align:right; margin-top:4px; }
+
+/* ════ RING ══════════════════════════════════════ */
+.rw  { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+.rs  { transform:rotate(-90deg); }
+.rb  { fill:none; stroke:var(--surface3); stroke-width:8; }
+.rf  { fill:none; stroke:var(--accent); stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
+.rc  { position:absolute; text-align:center; }
+.rp  { font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--accent); }
+.rl  { font-size:10px; color:var(--text2); }
+
+/* ════ BUTTONS ═══════════════════════════════════ */
+.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border:none; border-radius:var(--radius-sm); font-family:var(--font-am); font-size:14px; font-weight:700; cursor:pointer; transition:transform .2s, filter .2s; }
+.btn:active { transform:scale(.95); filter:brightness(.88); }
+.bpr { background:var(--accent); color:#000; }
+.bol { background:transparent; border:1.5px solid var(--accent); color:var(--accent); }
+.bda { background:var(--danger); color:#fff; }
+.bsu { background:var(--accent2); color:#000; }
+.bfw { width:100%; justify-content:center; }
+.bsm { padding:8px 14px; font-size:13px; }
+
+/* ════ FAB ════════════════════════════════════════ */
+#fab {
+  position:fixed; right:20px; bottom:calc(var(--nav-h) + 14px); z-index:98;
+  width:56px; height:56px; border-radius:50%;
+  background:var(--accent); border:none;
+  font-size:28px; font-weight:700; color:#000;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.45);
+  transition:transform .35s var(--spring), opacity .3s;
+}
+#fab.off { transform:scale(0) rotate(45deg); opacity:0; pointer-events:none; }
+#fab:active { transform:scale(.9); }
+
+/* ════ MODAL ════════════════════════════════════ */
+.ov { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.78); opacity:0; pointer-events:none; transition:opacity .3s; backdrop-filter:blur(6px); }
+.ov.open { opacity:1; pointer-events:auto; }
+.bs {
+  position:absolute; bottom:0; left:0; right:0;
+  background:var(--surface); border-radius:24px 24px 0 0;
+  padding:20px; max-height:90vh; overflow-y:auto;
+  transform:translateY(100%); transition:transform .4s var(--spring);
+  scrollbar-width:none;
+}
+.bs::-webkit-scrollbar { display:none; }
+.ov.open .bs { transform:translateY(0); }
+.bsh { width:40px; height:4px; background:var(--surface3); border-radius:99px; margin:0 auto 18px; }
+.bst { font-size:18px; font-weight:900; margin-bottom:16px; }
+
+/* ════ FORM ══════════════════════════════════════ */
+.fg  { margin-bottom:14px; }
+.fl  { font-size:12px; font-weight:700; color:var(--text2); margin-bottom:6px; display:block; }
+.fi,.fsel,.fta {
+  width:100%; padding:12px 14px;
+  background:var(--surface2); border:1.5px solid var(--surface3);
+  border-radius:var(--radius-sm); color:var(--text);
+  font-family:var(--font-am); font-size:14px;
+  outline:none; transition:border-color .2s;
+  -webkit-appearance:none;
+}
+.fi:focus,.fsel:focus,.fta:focus { border-color:var(--accent); }
+.fsel option { background:var(--surface); }
+.fta { resize:none; min-height:80px; }
+
+/* ════ TOGGLE ════════════════════════════════════ */
+.tr  { display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--surface3); }
+.tr:last-child { border-bottom:none; }
+.ti  { flex:1; margin-right:12px; }
+.tl  { font-size:14px; font-weight:600; }
+.td  { font-size:12px; color:var(--text2); margin-top:2px; }
+.tog {
+  position:relative; width:52px; height:30px;
+  background:var(--surface3); border-radius:99px;
+  border:none; cursor:pointer; flex-shrink:0; transition:background .3s;
+}
+.tog::after {
+  content:''; position:absolute; top:4px; left:4px;
+  width:22px; height:22px; background:#fff; border-radius:50%;
+  transition:left .3s var(--spring); box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.tog.on { background:var(--accent); }
+.tog.on::after { left:26px; }
+
+/* ════ DASHBOARD ════════════════════════════════ */
+.greet { font-size:22px; font-weight:900; margin-bottom:4px; }
+.dttxt { font-size:13px; color:var(--text2); margin-bottom:16px; }
+.qcard { background:var(--accent-dim); border:1px solid var(--accent); border-radius:var(--radius); padding:14px; margin-bottom:12px; }
+.qtxt  { font-size:14px; color:var(--accent); font-weight:600; line-height:1.65; }
+
+.mrow  { display:flex; justify-content:space-around; padding:6px 0; }
+.mbtn  { font-size:32px; background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; transition:transform .3s var(--spring), opacity .3s, filter .3s; opacity:.4; filter:grayscale(1); }
+.mbtn.on { opacity:1; filter:none; transform:scale(1.3); }
+
+.cgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
+.cbtn  { aspect-ratio:1; background:var(--surface2); border:2px solid var(--surface3); border-radius:var(--radius-sm); font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .2s var(--spring); }
+.cbtn.full { background:var(--accent-dim); border-color:var(--accent); }
+.cbtn:active { transform:scale(.85); }
+
+.cg2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cc  { background:var(--surface2); border-radius:var(--radius); padding:14px; border:1px solid var(--surface3); }
+.cci { font-size:24px; margin-bottom:6px; }
+.ccn { font-size:12px; color:var(--text2); margin-bottom:8px; }
+.ccp { font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--accent); }
+
+/* ════ TASKS ═════════════════════════════════════ */
+.csec { margin-bottom:18px; }
+.chdr { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:700; font-size:15px; }
+.titem { display:flex; align-items:flex-start; gap:12px; padding:13px; background:var(--surface); border-radius:var(--radius-sm); margin-bottom:8px; border:1px solid var(--surface3); }
+.titem.done { opacity:.5; }
+.titem.done .tname { text-decoration:line-through; }
+.tck  { width:26px; height:26px; min-width:26px; border-radius:50%; border:2.5px solid var(--surface3); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s var(--spring); font-size:14px; }
+.tck.done { background:var(--accent2); border-color:var(--accent2); color:#000; font-weight:900; }
+.tinfo { flex:1; min-width:0; cursor:pointer; }
+.tname { font-size:14px; font-weight:600; margin-bottom:3px; }
+.tmeta { font-size:11px; color:var(--text2); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.tstar { color:var(--accent); }
+.ttag  { background:var(--surface2); padding:2px 6px; border-radius:4px; font-family:var(--font-mono); }
+.tdel  { background:none; border:none; color:var(--text3); cursor:pointer; font-size:16px; padding:4px; transition:color .2s; }
+.tdel:active { color:var(--danger); }
+
+/* ════ HEALTH ════════════════════════════════════ */
+.htabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; scrollbar-width:none; }
+.htabs::-webkit-scrollbar { display:none; }
+.htab  { padding:9px 16px; border-radius:99px; border:1.5px solid var(--surface3); background:transparent; color:var(--text2); cursor:pointer; font-family:var(--font-am); font-size:13px; font-weight:700; transition:all .25s; white-space:nowrap; }
+.htab.on { background:var(--accent); border-color:var(--accent); color:#000; }
+
+.wdisp { font-family:var(--font-mono); font-size:64px; font-weight:700; color:var(--accent); text-align:center; padding:14px 0; letter-spacing:-2px; }
+.wstat-row { display:flex; justify-content:space-around; margin:8px 0; }
+.wstat  { text-align:center; }
+.wsv    { font-family:var(--font-mono); font-size:24px; font-weight:700; color:var(--accent); }
+.wsl    { font-size:11px; color:var(--text2); }
+
+.sgrid  { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
+.sbtn   { padding:14px 8px; background:var(--surface2); border:2px solid var(--surface3); border-radius:var(--radius-sm); text-align:center; cursor:pointer; font-family:var(--font-am); font-size:12px; font-weight:700; line-height:1.5; transition:all .25s var(--spring); }
+.sbtn.done { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+.sbtn:active { transform:scale(.93); }
+
+.trow  { display:flex; align-items:center; justify-content:space-between; padding:10px 0; }
+.trlb  { font-size:13px; }
+.trinp { background:var(--surface2); border:1.5px solid var(--surface3); border-radius:8px; color:var(--text); padding:7px 12px; font-family:var(--font-mono); font-size:14px; outline:none; transition:border-color .2s; }
+.trinp:focus { border-color:var(--accent); }
+
+.dchips { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+.dchip  { width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1.5px solid var(--surface3); font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .25s var(--spring); font-family:var(--font-am); color:var(--text2); }
+.dchip.on { background:var(--accent); border-color:var(--accent); color:#000; }
+
+/* ════ PROGRESS ══════════════════════════════════ */
+.sgrd  { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.scard { background:var(--surface); border-radius:var(--radius); padding:16px; border:1px solid var(--surface3); text-align:center; }
+.snum  { font-family:var(--font-mono); font-size:28px; font-weight:700; color:var(--accent); }
+.slbl  { font-size:11px; color:var(--text2); margin-top:4px; }
+
+.bchart { display:flex; align-items:flex-end; justify-content:space-around; height:120px; gap:6px; padding:8px 0; }
+.bcol   { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
+.bbar   { width:100%; border-radius:6px 6px 0 0; background:var(--accent); min-height:4px; transition:height .5s var(--spring); }
+.blbl   { font-size:10px; color:var(--text2); }
+.bval   { font-size:9px; font-family:var(--font-mono); color:var(--accent); }
+
+.calgrid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.calhdr  { text-align:center; font-size:9px; color:var(--text3); padding:2px 0; }
+.calday  { aspect-ratio:1; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:9px; font-family:var(--font-mono); background:var(--surface3); color:var(--text3); }
+.calday.g  { background:#2ECC71; color:#000; font-weight:700; }
+.calday.y  { background:#F39C12; color:#000; font-weight:700; }
+.calday.r  { background:#E74C3C; color:#fff; font-weight:700; }
+.calday.td { box-shadow:0 0 0 2px var(--accent); }
+
+.bgrid { display:flex; flex-wrap:wrap; gap:8px; }
+.badge { padding:8px 14px; border-radius:99px; background:var(--surface2); font-size:12px; font-weight:700; border:1.5px solid var(--surface3); display:flex; align-items:center; gap:6px; opacity:.4; transition:all .3s; }
+.badge.on { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); opacity:1; }
+
+.logitem { padding:10px 0; border-bottom:1px solid var(--surface3); }
+.logitem:last-child { border-bottom:none; }
+.logdate { font-size:11px; font-family:var(--font-mono); color:var(--text3); }
+.logtxt  { font-size:13px; }
+
+/* ════ SETTINGS ══════════════════════════════════ */
+.swatches { display:flex; gap:12px; margin:10px 0; }
+.sw   { width:42px; height:42px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:transform .3s var(--spring), border-color .2s; }
+.sw.on { border-color:var(--text); transform:scale(1.18); }
+
+.irow { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--surface3); }
+.irow:last-child { border-bottom:none; }
+.ik   { font-size:13px; color:var(--text2); }
+.iv   { font-size:13px; font-weight:700; color:var(--accent); }
+
+.cafrow  { display:flex; align-items:center; justify-content:space-between; }
+.cafbtns { display:flex; gap:10px; align-items:center; }
+.cafnum  { font-family:var(--font-mono); font-size:22px; font-weight:700; min-width:32px; text-align:center; }
+.icbtn   { width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1.5px solid var(--surface3); cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; transition:transform .2s var(--spring); }
+.icbtn:active { transform:scale(.88); }
+
+/* Pomodoro */
+.pdisp { font-family:var(--font-mono); font-size:72px; font-weight:700; color:var(--accent); text-align:center; padding:14px 0; letter-spacing:-3px; }
+.pctrl { display:flex; gap:12px; justify-content:center; }
+.ptabs { display:flex; gap:8px; justify-content:center; margin-bottom:14px; }
+.ptab  { padding:8px 20px; border-radius:99px; border:1.5px solid var(--surface3); background:transparent; color:var(--text2); cursor:pointer; font-family:var(--font-am); font-size:13px; font-weight:700; transition:all .25s; }
+.ptab.on { background:var(--accent); border-color:var(--accent); color:#000; }
+
+/* ════ EYE OVERLAY ══════════════════════════════ */
+#eye {
+  position:fixed; inset:0; z-index:9998;
+  background:rgba(0,0,0,.97);
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center; gap:20px;
+}
+#eye.show { display:flex; }
+.eico  { font-size:100px; animation:eP 2s ease infinite; }
+@keyframes eP { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.etmr  { font-family:var(--font-mono); font-size:86px; font-weight:700; color:#fff; }
+.etxt  { font-size:16px; color:#bbb; text-align:center; max-width:280px; line-height:1.6; }
+.etxt2 { font-size:12px; color:#555; text-align:center; }
+
+/* ════ CONFETTI ══════════════════════════════════ */
+#cvc { position:fixed; inset:0; z-index:9000; pointer-events:none; }
+
+/* ════ TOAST ═════════════════════════════════════ */
+#toast {
+  position:fixed; bottom:calc(var(--nav-h) + 80px); left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:var(--surface); color:var(--text);
+  padding:12px 22px; border-radius:99px;
+  font-size:13px; font-weight:600; box-shadow:var(--shadow);
+  z-index:8000; opacity:0; pointer-events:none;
+  transition:opacity .3s, transform .3s;
+  white-space:nowrap; border:1px solid var(--surface3);
+  max-width:90vw; text-align:center;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ════ INSTALL BANNER ════════════════════════════ */
+#ibanner {
+  position:fixed; top:0; left:0; right:0; z-index:8500;
+  background:var(--accent); color:#000;
+  padding:12px 16px; display:none;
+  align-items:center; justify-content:space-between;
+  font-size:13px; font-weight:700; gap:12px;
+}
+#ibanner.show { display:flex; }
+.ibtn { padding:6px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:700; font-size:12px; }
+.ibtn.y { background:#000; color:var(--accent); }
+.ibtn.n { background:rgba(0,0,0,.15); color:#000; }
+
+/* ════ MISC ══════════════════════════════════════ */
+.warn { margin-top:10px; padding:10px; background:rgba(231,76,60,.15); border-radius:8px; font-size:12px; color:#E74C3C; display:none; }
+.skwrap { display:flex; align-items:center; gap:12px; }
+.sknum  { font-family:var(--font-mono); font-size:52px; font-weight:700; color:var(--accent); }
+.skinfo { font-size:13px; color:var(--text2); line-height:1.5; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+input[type=number] { -moz-appearance:textfield; }
+.sh { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.st { font-size:22px; font-weight:900; }
+.ss { font-size:12px; color:var(--text2); margin-top:2px; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sp-logo">🌟</div>
+  <div class="sp-title">የአብዱ አፕ</div>
+  <div class="sp-quote" id="sq">ዛሬ 17 ታስኮች ይጠብቁሃል!</div>
+  <div class="sp-sub"   id="ss">በጥዋት ታስኮችህን ጀምር!</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<!-- INSTALL BANNER -->
+<div id="ibanner">
+  <span>📲 ያለ Chrome እንደ App ጫን!</span>
+  <div style="display:flex;gap:6px;">
+    <button class="ibtn y" onclick="doInstall()">ጫን</button>
+    <button class="ibtn n" onclick="G('ibanner').classList.remove('show')">✕</button>
+  </div>
+</div>
+
+<!-- CONFETTI -->
+<canvas id="cvc"></canvas>
+
+<!-- EYE OVERLAY -->
+<div id="eye">
+  <div class="eico">👁️</div>
+  <div class="etmr" id="etmr">20</div>
+  <div class="etxt">ከ6 ሜትር ርቀት ያለ ነገር ተመልከት</div>
+  <div class="etxt2">Look at something 6 meters away for 20 seconds</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════════════
+     APP
+════════════════════════════════════════════════ -->
+<div id="app" style="display:none;">
+<div id="screens">
+
+<!-- ══ S1: DASHBOARD ════════════════════════════ -->
+<div class="screen active" id="s-home">
+  <div class="sh">
+    <div>
+      <div class="greet" id="greet">እንደምን ዋልክ፣ አብዱ!</div>
+      <div class="dttxt" id="dttxt"></div>
+    </div>
+    <div style="font-size:34px;cursor:pointer;" id="sk-fire" onclick="nav('progress')">🔥0</div>
+  </div>
+
+  <div class="qcard">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:5px;">📖 የዕለት ቃል</div>
+    <div class="qtxt" id="qtext"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">📊 አጠቃላይ ዕድገት</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="rw">
+        <svg class="rs" width="92" height="92" viewBox="0 0 92 92">
+          <circle class="rb" cx="46" cy="46" r="38"/>
+          <circle class="rf" id="mring" cx="46" cy="46" r="38" stroke-dasharray="239" stroke-dashoffset="239"/>
+        </svg>
+        <div class="rc"><div class="rp" id="mpct">0%</div><div class="rl">ዛሬ</div></div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">
+          <span id="dcnt" style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--text);">0</span>/17
+        </div>
+        <div class="pw"><div class="pb h12" id="mpbar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">😊 ዛሬ ስሜቴ</div>
+    <div class="mrow">
+      <button class="mbtn" data-m="5" onclick="setMood(5)">😄</button>
+      <button class="mbtn" data-m="4" onclick="setMood(4)">😊</button>
+      <button class="mbtn" data-m="3" onclick="setMood(3)">😐</button>
+      <button class="mbtn" data-m="2" onclick="setMood(2)">😔</button>
+      <button class="mbtn" data-m="1" onclick="setMood(1)">😤</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="ct" style="margin:0;">💧 ዛሬ ውሃ</div>
+      <div style="font-family:var(--font-mono);font-size:13px;color:var(--accent);" id="hwml">0/2000ml</div>
+    </div>
+    <div class="cgrid" id="hcups"></div>
+    <div class="pw" style="margin-top:8px;"><div class="pb" id="hwbar" style="width:0%"></div></div>
+    <div class="warn" id="hwarn">☕ ቡና ጠጣህ! +200ml ተጨማሪ ውሃ ጠጣ</div>
+  </div>
+
+  <div class="card">
+    <div class="ct">📋 የምድብ ዕድገት</div>
+    <div class="cg2" id="catgrid"></div>
+  </div>
+</div>
+
+<!-- ══ S2: TASKS ═════════════════════════════════ -->
+<div class="screen" id="s-tasks">
+  <div class="sh">
+    <div><div class="st">📋 ታስኮች</div><div class="ss" id="tsub">0/17</div></div>
+    <button class="btn bol bsm" onclick="carryOver()">↷ ዛወር</button>
+  </div>
+  <div id="taskcon"></div>
+</div>
+
+<!-- ══ S3: HEALTH ════════════════════════════════ -->
+<div class="screen" id="s-health">
+  <div class="sh"><div class="st">💪 ጤና</div></div>
+  <div class="htabs">
+    <button class="htab on"  onclick="htab('water')">💧 ውሃ</button>
+    <button class="htab"     onclick="htab('walk')">🚶 ጉዞ</button>
+    <button class="htab"     onclick="htab('sport')">🏋️ ስፖርት</button>
+  </div>
+
+  <!-- WATER -->
+  <div id="ht-water">
+    <div class="card">
+      <div class="ct">💧 ዛሬ ውሃ</div>
+      <div style="text-align:center;font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--accent);margin:10px 0;" id="wml">0 ml</div>
+      <div class="pw"><div class="pb h12" id="wbar" style="width:0%"></div></div>
+      <div class="pt" id="wtxt">0 / 2000ml</div>
+      <div class="cgrid" id="wcups" style="margin-top:14px;"></div>
+    </div>
+    <div class="card">
+      <div class="ct">☕ ካፌይን</div>
+      <div class="cafrow">
+        <div><div style="font-size:14px;font-weight:600;">ቡና ስንት ጊዜ?</div>
+        <div style="font-size:12px;color:var(--text2);">1 ቡና = +200ml ማስጠንቀቂያ</div></div>
+        <div class="cafbtns">
+          <button class="icbtn" onclick="caf(-1)">−</button>
+          <div class="cafnum" id="cafnum">0</div>
+          <button class="icbtn" onclick="caf(1)">+</button>
+        </div>
+      </div>
+      <div class="warn" id="cwarn">☕ ቡና ጠጣህ! ተጨማሪ ውሃ ጠጣ</div>
+    </div>
+    <div class="card">
+      <div class="ct">⏰ የውሃ አላርም</div>
+      <div class="tr">
+        <div class="ti"><div class="tl">ውሃ አላርም (7am–4pm / 30 ደቂቃ)</div>
+        <div class="td">"Time to drink water! Stay hydrated."</div></div>
+        <button class="tog" id="wabtn" onclick="togWater()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WALK -->
+  <div id="ht-walk" style="display:none;">
+    <div class="card">
+      <div class="ct">🌅 የጠዋት እግር ጉዞ — 25 ደቂቃ</div>
+      <div class="trow"><div class="trlb">⏰ አላርም</div>
+      <input type="time" class="trinp" id="wamt" value="06:30" onchange="saveWt('am')"></div>
+      <div class="wdisp" id="wam-d">25:00</div>
+      <div class="wstat-row">
+        <div class="wstat"><div class="wsv" id="wam-s">0</div><div class="wsl">እርምጃ</div></div>
+        <div class="wstat"><div class="wsv" id="wam-c">0</div><div class="wsl">ካሎሪ</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn bpr" id="wam-btn" onclick="wStart('am')">🚶 ጉዞ ጀምር</button>
+        <button class="btn bsu bsm" id="wam-ok" onclick="wDone('am')" style="display:none;">✅ ጠናቀቅሁ</button>
+      </div>
+      <div id="wam-fin" style="display:none;margin-top:8px;color:var(--accent2);font-size:13px;font-weight:700;">✅ ጠዋት ጉዞ ተጠናቅቋል!</div>
+    </div>
+    <div class="card">
+      <div class="ct">🌙 የምሽት እግር ጉዞ — 25 ደቂቃ</div>
+      <div class="trow"><div class="trlb">⏰ አላርም</div>
+      <input type="time" class="trinp" id="wpmt" value="18:30" onchange="saveWt('pm')"></div>
+      <div class="wdisp" id="wpm-d">25:00</div>
+      <div class="wstat-row">
+        <div class="wstat"><div class="wsv" id="wpm-s">0</div><div class="wsl">እርምጃ</div></div>
+        <div class="wstat"><div class="wsv" id="wpm-c">0</div><div class="wsl">ካሎሪ</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn bpr" id="wpm-btn" onclick="wStart('pm')">🚶 ጉዞ ጀምር</button>
+        <button class="btn bsu bsm" id="wpm-ok" onclick="wDone('pm')" style="display:none;">✅ ጠናቀቅሁ</button>
+      </div>
+      <div id="wpm-fin" style="display:none;margin-top:8px;color:var(--accent2);font-size:13px;font-weight:700;">✅ ምሽት ጉዞ ተጠናቅቋል!</div>
+    </div>
+  </div>
+
+  <!-- SPORT -->
+  <div id="ht-sport" style="display:none;">
+    <div class="card">
+      <div class="ct">🏋️ ቅንብር</div>
+      <div class="fg"><label class="fl">የስፖርት አይነት</label>
+      <select class="fsel" id="sptype" onchange="saveSp()">
+        <option>ሩጫ</option><option>ዮጋ</option><option>ክብደት</option>
+        <option>ዋና</option><option>ብስክሌት</option><option>HIIT</option>
+      </select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg"><label class="fl">Sets</label>
+        <input type="number" class="fi" id="spsets" value="3" min="1" max="20" onchange="saveSp()"></div>
+        <div class="fg"><label class="fl">Reps</label>
+        <input type="number" class="fi" id="spreps" value="20" min="1" max="100" onchange="saveSp()"></div>
+      </div>
+      <div class="fg"><label class="fl">ቀናት</label><div class="dchips" id="spdays"></div></div>
+      <div class="trow"><div class="trlb">⏰ አላርም</div>
+      <input type="time" class="trinp" id="spalarm" value="06:00" onchange="saveSp()"></div>
+    </div>
+    <div class="card">
+      <div class="ct">💪 ዛሬ ስፖርት</div>
+      <div id="setsgrid"></div>
+      <div id="restwrap" style="display:none;text-align:center;margin:12px 0;">
+        <div style="font-size:13px;color:var(--text2);">⏱ Rest</div>
+        <div style="font-family:var(--font-mono);font-size:48px;font-weight:700;color:var(--warning);" id="restd">60</div>
+      </div>
+      <div style="margin:10px 0;">
+        <div style="font-size:12px;color:var(--text2);">🏆 Personal Record</div>
+        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--accent);" id="sppr">0 ቀናት</div>
+      </div>
+      <button class="btn bsu bfw" onclick="spDone()">✅ ዛሬ ስፖርት ሰርቻለሁ!</button>
+      <div id="spdonemsg" style="display:none;text-align:center;margin-top:8px;color:var(--accent2);font-size:13px;font-weight:700;">🎉 ስፖርት ተጠናቅቋል!</div>
+    </div>
+    <div class="card">
+      <div class="ct">📈 ሳምንታዊ ታሪክ</div>
+      <div class="bchart" id="spchart"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S4: PROGRESS ══════════════════════════════ -->
+<div class="screen" id="s-progress">
+  <div class="sh"><div class="st">📊 እድገት</div></div>
+  <div class="card">
+    <div class="ct">🔥 Streak</div>
+    <div class="skwrap">
+      <div class="sknum" id="sknum">0</div>
+      <div class="skinfo">ተከታታይ ቀናት<br><span style="font-size:11px;color:var(--text3);">ዛሬ ሳይጠናቀቅ ይሰበራል!</span></div>
+    </div>
+  </div>
+  <div class="sgrd">
+    <div class="scard"><div class="snum" id="sp-d">0</div><div class="slbl">ዛሬ ✅</div></div>
+    <div class="scard"><div class="snum">17</div><div class="slbl">አጠቃላይ 📋</div></div>
+    <div class="scard"><div class="snum" id="sp-w">0ml</div><div class="slbl">ዛሬ ውሃ 💧</div></div>
+    <div class="scard"><div class="snum" id="sp-p">0%</div><div class="slbl">አጠቃላይ 📊</div></div>
+  </div>
+  <div class="card"><div class="ct">📅 ሳምንታዊ</div><div class="bchart" id="wkchart"></div></div>
+  <div class="card">
+    <div class="ct">🗓 ወርሃዊ ካሌንደር</div>
+    <div class="calgrid" id="mcal"></div>
+    <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--text2);">
+      <span>🟢 80%+</span><span>🟡 50–79%</span><span>🔴 0–49%</span>
+    </div>
+  </div>
+  <div class="card"><div class="ct">📋 የምድብ ሚዛን</div><div id="catprog"></div></div>
+  <div class="card"><div class="ct">🏆 Badges</div><div class="bgrid" id="bdgrid"></div></div>
+  <div class="card">
+    <div class="ct">📚 Learning Log</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" class="fi" id="learninp" placeholder="ዛሬ የተማርኩት...">
+      <button class="btn bpr bsm" onclick="addLearn()">+</button>
+    </div>
+    <div id="learnlist"></div>
+  </div>
+  <div class="card">
+    <div class="ct">📖 መጽሐፍ ቆጠራ</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="cafbtns">
+        <button class="icbtn" onclick="chBooks(-1)">−</button>
+        <div class="cafnum" id="booksn">0</div>
+        <button class="icbtn" onclick="chBooks(1)">+</button>
+      </div>
+      <span style="font-size:13px;color:var(--text2);">መጽሐፍ ዘንድሮ</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">🎯 ነገ ቁጥር 1 ትኩረት</div>
+    <input type="text" class="fi" id="tmrinp" placeholder="ነገ ምን ነው ቁጥር 1 ትኩረትህ?" onchange="saveTmr()">
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button class="btn bol bsm" onclick="expJSON()">📤 JSON ላክ</button>
+    <button class="btn bol bsm" onclick="dlReport()">📄 ሪፖርት</button>
+  </div>
+</div>
+
+<!-- ══ S5: SETTINGS ══════════════════════════════ -->
+<div class="screen" id="s-settings">
+  <div class="sh"><div class="st">⚙️ ቅንብር</div></div>
+
+  <div class="card">
+    <div class="ct">👤 ግላዊ</div>
+    <div class="fg"><label class="fl">ስም</label>
+    <input type="text" class="fi" id="nameinp" placeholder="ስምህን ጻፍ" onchange="saveName()"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">🎨 Theme</div>
+    <div class="swatches">
+      <div class="sw" style="background:#F5C842;" onclick="setTheme('gold')"  id="sw-g"></div>
+      <div class="sw" style="background:#2ECC71;" onclick="setTheme('green')" id="sw-gr"></div>
+      <div class="sw" style="background:#3498DB;" onclick="setTheme('blue')"  id="sw-b"></div>
+    </div>
+    <div class="tr" style="margin-top:8px;">
+      <div class="ti"><div class="tl">☀️ Light Mode</div></div>
+      <button class="tog" id="lmtog" onclick="togLight()"></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">🔔 አላርሞች</div>
+    <div class="tr"><div class="ti"><div class="tl">💧 ውሃ አላርም</div><div class="td">30 ደቂቃ (7am–4pm)</div></div>
+    <button class="tog" id="t-wa" onclick="togSet('waterAlarm')"></button></div>
+    <div class="tr"><div class="ti"><div class="tl">📏 ርቀት ማስጠንቀቂያ</div><div class="td">ስልኩ ሲከፈት</div></div>
+    <button class="tog" id="t-da" onclick="togSet('distanceAlert')"></button></div>
+    <div class="tr"><div class="ti"><div class="tl">👁️ 20-20-20 ህግ</div><div class="td">ሁሌ 20 ደቂቃ ዓይን ዕረፍት</div></div>
+    <button class="tog" id="t-er" onclick="togSet('eyeRule')"></button></div>
+    <div class="tr"><div class="ti"><div class="tl">🌅 Gentle Wake</div><div class="td">ድምፅ ቀስ ብሎ ይጀምራል</div></div>
+    <button class="tog" id="t-gw" onclick="togSet('gentleWake')"></button></div>
+    <div class="tr"><div class="ti"><div class="tl">🔔 ሁሉም አላርሞች</div></div>
+    <button class="tog" id="t-aa" onclick="togSet('allAlarms')"></button></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">⏱️ Pomodoro</div>
+    <div class="ptabs">
+      <button class="ptab on" id="pt-w" onclick="setPomo('work')">💼 ሥራ 25 ደቂቃ</button>
+      <button class="ptab"    id="pt-b" onclick="setPomo('break')">☕ እረፍት 5 ደቂቃ</button>
+    </div>
+    <div class="pdisp" id="pomodisp">25:00</div>
+    <div class="pctrl">
+      <button class="btn bpr" id="pomobtn" onclick="togPomo()">▶ ጀምር</button>
+      <button class="btn bol" onclick="resetPomo()">↺ ዳግም</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">💾 ዳታ</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn bol bsm" onclick="expJSON()">📤 ላክ</button>
+      <label class="btn bol bsm" style="cursor:pointer;">📥 አምጣ
+        <input type="file" accept=".json" onchange="impJSON(event)" style="display:none;"></label>
+      <button class="btn bda bsm" onclick="clearAll()">🗑️ ሰርዝ</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">ℹ️ ስለ አፑ</div>
+    <div class="irow"><span class="ik">አፕ ስም</span><span class="iv">የአብዱ አፕ</span></div>
+    <div class="irow"><span class="ik">Version</span><span class="iv">4.0.0</span></div>
+    <div class="irow"><span class="ik">PWA</span><span class="iv" style="color:var(--accent2);">✅ Standalone</span></div>
+    <div class="irow"><span class="ik">Offline</span><span class="iv" style="color:var(--accent2);">✅ 100%</span></div>
+    <div class="irow"><span class="ik">SW</span><span class="iv" id="swstat">Checking...</span></div>
+  </div>
+</div>
+
+</div><!-- /screens -->
+
+<!-- BOTTOM NAV -->
+<nav id="bnav">
+  <button class="nb on" onclick="nav('home')"     id="nb-home"><span class="ni">🏠</span><span class="nl">መነሻ</span></button>
+  <button class="nb"    onclick="nav('tasks')"    id="nb-tasks"><span class="ni">📋</span><span class="nl">ታስኮች</span></button>
+  <button class="nb"    onclick="nav('health')"   id="nb-health"><span class="ni">💪</span><span class="nl">ጤና</span></button>
+  <button class="nb"    onclick="nav('progress')" id="nb-progress"><span class="ni">📊</span><span class="nl">እድገት</span></button>
+  <button class="nb"    onclick="nav('settings')" id="nb-settings"><span class="ni">⚙️</span><span class="nl">ቅንብር</span></button>
+</nav>
+</div><!-- /app -->
+
+<!-- TASK MODAL -->
+<div class="ov" id="tmod" onclick="closeMod(event,'tmod')">
+  <div class="bs">
+    <div class="bsh"></div>
+    <div class="bst" id="tmod-ttl">➕ አዲስ ታስክ</div>
+    <div class="fg"><label class="fl">ስም *</label><input type="text" class="fi" id="t-nm" placeholder="ታስክ ስም"></div>
+    <div class="fg"><label class="fl">ምድብ</label>
+    <select class="fsel" id="t-ct">
+      <option value="morning">🌅 ጠዋት</option><option value="health">💪 ጤና</option>
+      <option value="knowledge">🧠 ዕውቀት</option><option value="evening">🌙 ምሽት</option>
+      <option value="pro">⚡ Pro</option>
+    </select></div>
+    <div class="fg"><label class="fl">ቅድሚያ</label>
+    <select class="fsel" id="t-pr">
+      <option value="3">⭐⭐⭐ ከፍተኛ</option><option value="2">⭐⭐ መካከለኛ</option><option value="1">⭐ ዝቅተኛ</option>
+    </select></div>
+    <div class="fg"><label class="fl">⏰ አላርም ሰዓት</label><input type="time" class="fi" id="t-tm"></div>
+    <div class="fg"><label class="fl">📝 ማስታወሻ</label><textarea class="fta" id="t-nt" placeholder="ተጨማሪ ማስታወሻ..."></textarea></div>
+    <div class="fg"><label class="fl">🔄 ድግግሞሽ</label>
+    <select class="fsel" id="t-rp">
+      <option value="daily">ዕለታዊ</option><option value="weekdays">ሰኞ–አርብ</option>
+      <option value="weekends">ቅዳሜ–እሁድ</option><option value="once">አንዴ ብቻ</option>
+    </select></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn bpr bfw" onclick="saveTask()">💾 አስቀምጥ</button>
+      <button class="btn bol" onclick="closeMod(null,'tmod')" style="min-width:72px;">ሰርዝ</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIP MODAL -->
+<div class="ov" id="tipmod" onclick="closeMod(event,'tipmod')">
+  <div class="bs" style="text-align:center;">
+    <div class="bsh"></div>
+    <div style="font-size:56px;margin-bottom:10px;" id="tip-ic">💡</div>
+    <div style="font-size:20px;font-weight:900;margin-bottom:8px;" id="tip-tt"></div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.65;" id="tip-bd"></div>
+    <button class="btn bpr bfw" onclick="closeMod(null,'tipmod')">👍 አመሰግናለሁ!</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button id="fab" class="off" onclick="openTMod()">+</button>
+
+<script>
+// ══════════════════════════════════════════════════
+// SERVICE WORKER REGISTRATION
+// ══════════════════════════════════════════════════
+function regSW() {
+  if (!('serviceWorker' in navigator)) {
+    G('swstat').textContent = '❌ Not Supported';
+    return;
+  }
+  // sw.js ተመሳሳይ ቦታ ላይ መኖር አለበት
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => {
+      G('swstat').textContent = '✅ Active';
+      console.log('[App] SW registered, scope:', reg.scope);
+
+      // Update check
+      reg.addEventListener('updatefound', () => {
+        reg.installing.addEventListener('statechange', function() {
+          if (this.state === 'installed' && navigator.serviceWorker.controller) {
+            toast('🔄 አዲስ ስሪት ተገኘ! ዳግም ክፈት።');
+          }
+        });
+      });
+    })
+    .catch(err => {
+      console.error('[App] SW Error:', err);
+      G('swstat').textContent = '⚠️ Error: ' + err.message;
+    });
+}
+
+// ══════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════
+const QUOTES = [
+  'ዛሬ ካልጀመርህ መቼ ትጀምራለህ?',
+  'ትንሽ ሩቲን ትልቅ ለውጥ ያመጣል።',
+  'ዛሬን ሙሉ ለሙሉ ኖር — ነገ ሌላ ቀን ነው!',
+  'ምርጥ ኢንቬስትሜንት ጤናህ ነው።',
+  'ወጥ ጥረት ፈጽሞ ፍሬ ያሰጣል!',
+  'ዛሬ ያለፈ ቀን ዝም ብሎ አያልፍም።',
+  'ድርጊትህ ዕጣ ፈንታህን ይቆጣጠራል።'
+];
+const TIPS = {
+  morning:   ['🌅 አዕምሮህ በጠዋት 40% ይበልጥ ይሰራል!', '💧 ጠዋት ውሃ ሜታቦሊዝምህን ያነቃዋል!'],
+  health:    ['💪 ቀን 30 ደቂቃ ትልቅ ለውጥ ያመጣል!', '🏃 ሩቲን ካልሆነ ስፖርት ዕቅዱ ብቻ ነው!'],
+  knowledge: ['🧠 ቋንቋ መማር አዲስ ዓለም ይከፍታል!', '📚 ቀን 20 ደቂቃ = 12 መጽሐፍ ዓመቱ!'],
+  evening:   ['🌙 ምሽት እቅድ ቀጣዩን ቀን 2x ያሻሽላል!', '✍️ Journal ስሜትህን ይፈውሳል!'],
+  pro:       ['⚡ ቴክኖሎጂ ዕረፍት ፈጠራህን ያሻሽላል!', '🙏 ምስጋና ደስታ ይጨምራል!']
+};
+const DTASKS = [
+  {id:'t1', title:'ውሃ ጠጣ (500ml)',         cat:'morning',   pri:3, time:'07:00', note:'', done:false, at:null, rep:'daily'},
+  {id:'t2', title:'ጸሎት / ሜዲቴሽን',           cat:'morning',   pri:3, time:'07:10', note:'', done:false, at:null, rep:'daily'},
+  {id:'t3', title:'የአካል ብቃት እንቅስቃሴ',     cat:'morning',   pri:3, time:'07:30', note:'', done:false, at:null, rep:'daily'},
+  {id:'t4', title:'ማስታወሻ ደብተር ጻፍ',       cat:'morning',   pri:2, time:'08:00', note:'', done:false, at:null, rep:'daily'},
+  {id:'t5', title:'መጽሐፍ አንብብ',             cat:'morning',   pri:2, time:'08:20', note:'', done:false, at:null, rep:'daily'},
+  {id:'t6', title:'🚶 25 ደቂቃ መራመድ',       cat:'health',    pri:3, time:'',      note:'', done:false, at:null, rep:'daily'},
+  {id:'t7', title:'ውሃ 2-3 ሊትር',            cat:'health',    pri:3, time:'',      note:'', done:false, at:null, rep:'daily'},
+  {id:'t8', title:'7-8 ሰዓት እንቅልፍ',        cat:'health',    pri:3, time:'22:00', note:'', done:false, at:null, rep:'daily'},
+  {id:'t9', title:'የትንፋሽ ልምምድ',            cat:'health',    pri:2, time:'17:00', note:'', done:false, at:null, rep:'daily'},
+  {id:'t10',title:'ቋንቋ ተማር',               cat:'knowledge', pri:2, time:'09:30', note:'', done:false, at:null, rep:'daily'},
+  {id:'t11',title:'ፖድካስት / ቪዲዮ ተመልከት',  cat:'knowledge', pri:1, time:'',      note:'', done:false, at:null, rep:'daily'},
+  {id:'t12',title:'የዕለት ማስታወሻ ክለሳ',      cat:'knowledge', pri:2, time:'',      note:'', done:false, at:null, rep:'daily'},
+  {id:'t13',title:'እቅድ አውጣ ለማግስት',       cat:'evening',   pri:3, time:'21:00', note:'', done:false, at:null, rep:'daily'},
+  {id:'t14',title:'ስልክ ዘጋ (30 ደቂቃ ቀደም)', cat:'evening',   pri:3, time:'21:30', note:'', done:false, at:null, rep:'daily'},
+  {id:'t15',title:'3 ጥሩ ነገሮች አስብ',        cat:'evening',   pri:2, time:'21:45', note:'', done:false, at:null, rep:'daily'},
+  {id:'t16',title:'ከቴክኖሎጂ ዕረፍት',          cat:'pro',       pri:1, time:'',      note:'', done:false, at:null, rep:'daily'},
+  {id:'t17',title:'ምስጋና ገልጽ',             cat:'pro',       pri:2, time:'',      note:'', done:false, at:null, rep:'daily'},
+];
+const CATS = {
+  morning:{ic:'🌅',nm:'ጠዋት'}, health:{ic:'💪',nm:'ጤና'},
+  knowledge:{ic:'🧠',nm:'ዕውቀት'}, evening:{ic:'🌙',nm:'ምሽት'}, pro:{ic:'⚡',nm:'Pro'}
+};
+const DAM  = ['ሰ','ማ','ረ','ሐ','አ','ቅ','እ'];
+const WDAM = ['እሁድ','ሰኞ','ማክሰኞ','ረቡዕ','ሐሙስ','አርብ','ቅዳሜ'];
+const MON  = ['ጃን','ፌብ','ማር','ኤፕ','ሜይ','ጁን','ጁላ','ኦገ','ሴፕ','ኦክ','ኖቬ','ዲሴ'];
+
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let S = {}, editId = null, curScr = 'home', curHTab = 'water';
+const WT = { am:{iv:null,sec:1500,run:false}, pm:{iv:null,sec:1500,run:false} };
+const SP = { cur:0, restIv:null };
+const PM = { iv:null, sec:25*60, run:false, mode:'work' };
+const EY = { mIv:null, bIv:null, mSec:20*60, bSec:20 };
+let wAlmIv=null, tAlmIv=null;
+
+function mkS() {
+  return {
+    name:'አብዱ', theme:'gold', dark:true,
+    tasks:JSON.parse(JSON.stringify(DTASKS)),
+    cups:Array(8).fill(false), caf:0,
+    spType:'ሩጫ', spSets:3, spReps:20, spDays:['ሰ','ረ','አ'],
+    spAlarm:'06:00', spDone:false, spHist:[], spStreak:0, spPR:0,
+    wAmT:'06:30', wPmT:'18:30', wAmDone:false, wPmDone:false, wSteps:0,
+    streak:0, lastDate:'', mood:null, weekly:{}, monthly:{},
+    books:0, learnLog:[], tomorrow:'', badges:{},
+    cfg:{ distanceAlert:true, eyeRule:true, waterAlarm:true,
+          allAlarms:true, gentleWake:true, pomoMin:25 }
+  };
+}
+
+function loadS() {
+  try {
+    const r = localStorage.getItem('abdu4');
+    S = r ? JSON.parse(r) : mkS();
+    // Migrate: ensure cfg exists
+    if (!S.cfg) S.cfg = mkS().cfg;
+    if (!S.badges) S.badges = {};
+    checkReset();
+  } catch(e) { S = mkS(); }
+  save();
+}
+function save() { try { localStorage.setItem('abdu4', JSON.stringify(S)); } catch(e){} }
+
+// ══════════════════════════════════════════════════
+// DAY RESET
+// ══════════════════════════════════════════════════
+function td() {
+  const d=new Date();
+  return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+}
+function checkReset() {
+  const today = td();
+  if (S.lastDate === today) return;
+  if (S.lastDate) {
+    const p = getPct();
+    S.monthly[S.lastDate] = p;
+    S.weekly[S.lastDate]  = p;
+    S.streak = p >= 50 ? (S.streak||0)+1 : 0;
+    chkBadges(p);
+  }
+  S.tasks   = S.tasks.map(t=>({...t,done:false,at:null}));
+  S.cups    = Array(8).fill(false);
+  S.caf     = 0;
+  S.wAmDone = S.wPmDone = false;
+  S.wSteps  = 0;
+  S.spDone  = false;
+  S.mood    = null;
+  S.lastDate= today;
+  save();
+}
+function getPct() {
+  const n=S.tasks.length||1;
+  return Math.round(S.tasks.filter(t=>t.done).length/n*100);
+}
+function chkBadges(p) {
+  if(p>=80) S.badges.bestDay=true;
+  const w=Object.values(S.weekly).slice(-7);
+  if(w.length>=7&&w.every(v=>v>=80)) S.badges.bestWeek=true;
+  const m=Object.values(S.monthly);
+  if(m.length>=28&&m.filter(v=>v>=80).length>=25) S.badges.bestMonth=true;
+  if((S.streak||0)>=7)  S.badges.sk7=true;
+  if((S.streak||0)>=30) S.badges.sk30=true;
+  if((S.books||0)>=12)  S.badges.bk12=true;
+  save();
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function nav(scr) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  G('s-'+scr).classList.add('active');
+  G('nb-'+scr).classList.add('on');
+  curScr=scr;
+  G('fab').classList.toggle('off', scr!=='tasks');
+  if(scr==='home')     renderHome();
+  if(scr==='tasks')    renderTasks();
+  if(scr==='health')   renderHealth();
+  if(scr==='progress') renderProg();
+  if(scr==='settings') renderSettings();
+}
+
+// ══════════════════════════════════════════════════
+// TTS
+// ══════════════════════════════════════════════════
+function speak(txt, gentle=false) {
+  if(!S.cfg.allAlarms||!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='en-US'; u.rate=0.88; u.volume=gentle&&S.cfg.gentleWake?0.15:1;
+  speechSynthesis.speak(u);
+}
+
+// ══════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════
+function renderHome() {
+  const h=new Date().getHours();
+  G('greet').textContent=`${h<12?'እንደምን ዋልክ':h<17?'እንደምን ዋልህ':'እንደምን አደርህ'}፣ ${S.name}!`;
+  const d=new Date();
+  G('dttxt').textContent=`${WDAM[d.getDay()]}፣ ${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`;
+  G('qtext').textContent=QUOTES[d.getDay()%QUOTES.length];
+  G('sk-fire').textContent=`🔥${S.streak||0}`;
+  const done=S.tasks.filter(t=>t.done).length;
+  const p=getPct();
+  G('dcnt').textContent=done;
+  G('mpbar').style.width=p+'%';
+  G('mpct').textContent=p+'%';
+  G('mring').style.strokeDashoffset=239-(239*p/100);
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('on',+b.dataset.m===S.mood));
+  renderHCups(); renderCatGrid();
+}
+function renderHCups() {
+  const g=G('hcups'); g.innerHTML='';
+  S.cups.forEach((f,i)=>{
+    const b=ce('button'); b.className='cbtn'+(f?' full':'');
+    b.textContent=f?'🔵':'💧'; b.onclick=()=>togCup(i); g.appendChild(b);
+  });
+  const ml=S.cups.filter(Boolean).length*250;
+  G('hwml').textContent=ml+'/2000ml';
+  G('hwbar').style.width=Math.min(100,ml/20)+'%';
+  G('hwarn').style.display=S.caf>0?'block':'none';
+}
+function renderCatGrid() {
+  const g=G('catgrid'); g.innerHTML='';
+  Object.keys(CATS).forEach(cat=>{
+    const ts=S.tasks.filter(t=>t.cat===cat);
+    const dn=ts.filter(t=>t.done).length;
+    const p=ts.length?Math.round(dn/ts.length*100):0;
+    const c=CATS[cat];
+    g.innerHTML+=`<div class="cc"><div class="cci">${c.ic}</div><div class="ccn">${c.nm}</div>
+      <div class="ccp">${p}%</div>
+      <div class="pw" style="margin-top:6px;"><div class="pb h6" style="width:${p}%"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px;">${dn}/${ts.length}</div></div>`;
+  });
+}
+function setMood(m) {
+  S.mood=m; save(); renderHome();
+  toast(['','😤 ትንሽ እረፍት!','😔 ጥሩ ይሆናል!','😐 ደህና ቀን!','😊 ቆንጆ!','😄 አስደናቂ!'][m]);
+}
+
+// ══════════════════════════════════════════════════
+// TASKS
+// ══════════════════════════════════════════════════
+function renderTasks() {
+  const c=G('taskcon'); c.innerHTML='';
+  const dn=S.tasks.filter(t=>t.done).length;
+  G('tsub').textContent=`${dn}/${S.tasks.length} ተጠናቅቋል`;
+  Object.keys(CATS).forEach(cat=>{
+    const ts=S.tasks.filter(t=>t.cat===cat);
+    if(!ts.length) return;
+    const ci=CATS[cat], cd=ts.filter(t=>t.done).length;
+    let h=`<div class="csec"><div class="chdr">
+      <span>${ci.ic}</span><span>${ci.nm}</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-left:auto;">${cd}/${ts.length}</span>
+    </div>`;
+    ts.forEach(t=>{
+      const st='⭐'.repeat(t.pri);
+      const tt=t.time?`<span class="ttag">${t.time}</span>`:'';
+      const cp=t.at?`<span style="color:var(--accent2);">✅${t.at}</span>`:'';
+      h+=`<div class="titem${t.done?' done':''}">
+        <div class="tck${t.done?' done':''}" onclick="togTask('${t.id}')">${t.done?'✓':''}</div>
+        <div class="tinfo" onclick="openEdit('${t.id}')">
+          <div class="tname">${t.title}</div>
+          <div class="tmeta"><span class="tstar">${st}</span>${tt}${cp}</div>
+          ${t.note?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">📝${t.note}</div>`:''}
+        </div>
+        <button class="tdel" onclick="delTask('${t.id}')">🗑</button>
+      </div>`;
+    });
+    c.innerHTML+=h+'</div>';
+  });
+}
+function togTask(id) {
+  const t=S.tasks.find(x=>x.id===id); if(!t) return;
+  t.done=!t.done;
+  if(t.done){ const n=new Date(); t.at=`${p2(n.getHours())}:${p2(n.getMinutes())}`;
+    confetti(); showTip(t.cat,t.title); S.weekly[td()]=getPct(); }
+  else t.at=null;
+  save(); renderTasks(); renderHome();
+}
+function delTask(id) {
+  if(!confirm('ይህን ታስክ ትሰርዛለህ?')) return;
+  S.tasks=S.tasks.filter(t=>t.id!==id); save(); renderTasks();
+}
+function openTMod() {
+  editId=null; G('tmod-ttl').textContent='➕ አዲስ ታስክ';
+  G('t-nm').value=G('t-nt').value='';
+  G('t-ct').value='morning'; G('t-pr').value='2';
+  G('t-tm').value=''; G('t-rp').value='daily';
+  G('tmod').classList.add('open');
+}
+function openEdit(id) {
+  const t=S.tasks.find(x=>x.id===id); if(!t) return;
+  editId=id; G('tmod-ttl').textContent='✏️ ታስክ አስተካክል';
+  G('t-nm').value=t.title; G('t-ct').value=t.cat;
+  G('t-pr').value=t.pri; G('t-tm').value=t.time||'';
+  G('t-nt').value=t.note||''; G('t-rp').value=t.rep||'daily';
+  G('tmod').classList.add('open');
+}
+function saveTask() {
+  const nm=G('t-nm').value.trim(); if(!nm){toast('❌ ስም ጻፍ!');return;}
+  if(editId){ const t=S.tasks.find(x=>x.id===editId);
+    if(t){t.title=nm;t.cat=G('t-ct').value;t.pri=+G('t-pr').value;
+      t.time=G('t-tm').value;t.note=G('t-nt').value;t.rep=G('t-rp').value;}
+  } else {
+    S.tasks.push({id:'t'+Date.now(),title:nm,cat:G('t-ct').value,
+      pri:+G('t-pr').value,time:G('t-tm').value,note:G('t-nt').value,
+      done:false,at:null,rep:G('t-rp').value});
+  }
+  save(); closeMod(null,'tmod'); renderTasks(); toast('✅ ታስክ ተቀምጧል!');
+}
+function carryOver() { toast(`↷ ${S.tasks.filter(t=>!t.done).length} ታስኮች ወደ ማግስት!`); }
+function showTip(cat,title) {
+  const tips=TIPS[cat]||TIPS.morning;
+  G('tip-ic').textContent=CATS[cat]?.ic||'💡';
+  G('tip-tt').textContent=`🎉 "${title}" ጠናቀቅህ!`;
+  G('tip-bd').textContent=tips[~~(Math.random()*tips.length)];
+  G('tipmod').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════
+// WATER
+// ══════════════════════════════════════════════════
+function togCup(i) { S.cups[i]=!S.cups[i]; save(); renderWaterTab(); renderHCups(); }
+function renderWaterTab() {
+  const wc=G('wcups'); if(!wc) return;
+  wc.innerHTML='';
+  S.cups.forEach((f,i)=>{
+    const b=ce('button'); b.className='cbtn'+(f?' full':'');
+    b.textContent=f?'🔵':'💧'; b.onclick=()=>togCup(i); wc.appendChild(b);
+  });
+  const ml=S.cups.filter(Boolean).length*250;
+  G('wml').textContent=ml+' ml';
+  G('wbar').style.width=Math.min(100,ml/20)+'%';
+  G('wtxt').textContent=`${ml} / 2000ml`;
+  G('cafnum').textContent=S.caf;
+  G('cwarn').style.display=S.caf>0?'block':'none';
+  const wb=G('wabtn'); if(wb)wb.classList.toggle('on',S.cfg.waterAlarm);
+}
+function caf(d) {
+  S.caf=Math.max(0,(S.caf||0)+d);
+  if(d>0&&S.caf>0){speak("Coffee detected! Drink an extra 200 milliliters of water.");toast('☕ +200ml ውሃ ጠጣ!');}
+  save(); renderWaterTab(); renderHCups();
+}
+function togWater() {
+  S.cfg.waterAlarm=!S.cfg.waterAlarm; save();
+  G('wabtn').classList.toggle('on',S.cfg.waterAlarm);
+  S.cfg.waterAlarm?startWAlm():stopWAlm();
+}
+
+// ══════════════════════════════════════════════════
+// HEALTH
+// ══════════════════════════════════════════════════
+function htab(t) {
+  document.querySelectorAll('.htab').forEach((b,i)=>b.classList.toggle('on',['water','walk','sport'][i]===t));
+  ['water','walk','sport'].forEach(x=>{const el=G('ht-'+x);if(el)el.style.display=x===t?'block':'none';});
+  curHTab=t;
+  if(t==='water')renderWaterTab();
+  if(t==='walk') renderWalkTab();
+  if(t==='sport')renderSportTab();
+}
+function renderHealth(){htab(curHTab);}
+
+// WALK
+function renderWalkTab() {
+  G('wamt').value=S.wAmT; G('wpmt').value=S.wPmT;
+  G('wam-s').textContent=G('wpm-s').textContent=S.wSteps||0;
+  G('wam-c').textContent=G('wpm-c').textContent=Math.round((S.wSteps||0)*0.04);
+  if(S.wAmDone){G('wam-fin').style.display='block';G('wam-btn').style.display='none';G('wam-ok').style.display='none';}
+  if(S.wPmDone){G('wpm-fin').style.display='block';G('wpm-btn').style.display='none';G('wpm-ok').style.display='none';}
+}
+function saveWt(p){if(p==='am')S.wAmT=G('wamt').value;else S.wPmT=G('wpmt').value;save();toast('✅ ሰዓት ተቀምጧል!');}
+function wStart(p) {
+  const w=WT[p]; if(w.run){wStop(p);return;}
+  speak(p==='am'?"Good morning! Time for your 25-minute walk.":"Good evening! Time for your 25-minute walk.",p==='am'&&S.cfg.gentleWake);
+  w.sec=1500;w.run=true;
+  G(`w${p}-btn`).textContent='⏸ ቆም';
+  G(`w${p}-ok`).style.display='inline-flex';
+  w.iv=setInterval(()=>{
+    w.sec--; S.wSteps=(S.wSteps||0)+Math.floor(Math.random()*3+1);
+    G(`w${p}-d`).textContent=fmt(w.sec);
+    G(`w${p}-s`).textContent=S.wSteps;
+    G(`w${p}-c`).textContent=Math.round(S.wSteps*0.04);
+    if(w.sec<=0){clearInterval(w.iv);w.run=false;
+      speak("Well done! You completed your 25-minute walk. Great job!");confetti();wDone(p);}
+  },1000);
+}
+function wStop(p){const w=WT[p];clearInterval(w.iv);w.run=false;G(`w${p}-btn`).textContent='🚶 ጉዞ ጀምር';}
+function wDone(p) {
+  wStop(p); if(p==='am')S.wAmDone=true;else S.wPmDone=true; save();
+  G(`w${p}-fin`).style.display='block';G(`w${p}-btn`).style.display='none';G(`w${p}-ok`).style.display='none';
+  toast('✅ የእግር ጉዞ ተጠናቅቋል!');
+}
+
+// SPORT
+function renderSportTab() {
+  G('sptype').value=S.spType;G('spsets').value=S.spSets;G('spreps').value=S.spReps;G('spalarm').value=S.spAlarm;
+  const dc=G('spdays');dc.innerHTML='';
+  DAM.forEach(d=>{const el=ce('div');el.className='dchip'+(S.spDays.includes(d)?' on':'');
+    el.textContent=d;el.onclick=()=>togSpDay(d);dc.appendChild(el);});
+  renderSets();G('sppr').textContent=(S.spPR||0)+' ቀናት';
+  if(S.spDone)G('spdonemsg').style.display='block';
+  renderSpChart();
+}
+function renderSets() {
+  const g=G('setsgrid');if(!g)return;g.innerHTML='';
+  const gr=ce('div');gr.className='sgrid';
+  for(let i=0;i<S.spSets;i++){
+    const b=ce('div');b.className='sbtn'+(SP.cur>i?' done':'');
+    b.innerHTML=`Set ${i+1}<br><small>${S.spReps} reps</small>`;
+    b.onclick=()=>doSet(i);gr.appendChild(b);}
+  g.appendChild(gr);
+}
+function doSet(i){if(i!==SP.cur)return;SP.cur++;renderSets();if(SP.cur<S.spSets)startRest();}
+function startRest(){
+  let s=60;G('restwrap').style.display='block';G('restd').textContent=s;clearInterval(SP.restIv);
+  SP.restIv=setInterval(()=>{s--;G('restd').textContent=s;
+    if(s<=0){clearInterval(SP.restIv);G('restwrap').style.display='none';speak("Rest complete. Start your next set!");toast('💪 ቀጣይ Set!');}},1000);
+}
+function spDone(){
+  S.spDone=true;S.spStreak=(S.spStreak||0)+1;if(S.spStreak>(S.spPR||0))S.spPR=S.spStreak;
+  if(!S.spHist)S.spHist=[];S.spHist.push({date:td(),type:S.spType});
+  if(S.spHist.length>60)S.spHist.shift();save();confetti();speak("Great job! Workout complete!");
+  toast('🎉 ስፖርት ተጠናቅቋል!');G('spdonemsg').style.display='block';G('sppr').textContent=(S.spPR||0)+' ቀናት';renderSpChart();
+}
+function renderSpChart(){
+  const ch=G('spchart');if(!ch)return;ch.innerHTML='';
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const str=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+    const hit=(S.spHist||[]).some(h=>h.date===str);
+    const col=ce('div');col.className='bcol';
+    const bar=ce('div');bar.className='bbar';bar.style.height=hit?'90px':'8px';bar.style.background=hit?'var(--accent)':'var(--surface3)';
+    const lb=ce('div');lb.className='blbl';lb.textContent=DAM[(d.getDay()+1)%7];
+    col.appendChild(bar);col.appendChild(lb);ch.appendChild(col);}
+}
+function saveSp(){S.spType=G('sptype').value;S.spSets=+G('spsets').value||3;S.spReps=+G('spreps').value||20;S.spAlarm=G('spalarm').value;save();renderSets();}
+function togSpDay(d){S.spDays=S.spDays.includes(d)?S.spDays.filter(x=>x!==d):[...S.spDays,d];save();renderSportTab();}
+
+// ══════════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════════
+function renderProg() {
+  const dn=S.tasks.filter(t=>t.done).length, p=getPct();
+  G('sknum').textContent=S.streak||0;G('sp-d').textContent=dn;
+  G('sp-w').textContent=(S.cups.filter(Boolean).length*250)+'ml';G('sp-p').textContent=p+'%';
+  renderWkChart();renderMoCal();renderCatProg();renderBadges();renderLearnLog();
+  G('booksn').textContent=S.books||0;G('tmrinp').value=S.tomorrow||'';
+}
+function renderWkChart(){
+  const ch=G('wkchart');ch.innerHTML='';
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const str=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+    const v=i===0?getPct():(S.weekly[str]||0);
+    const col=ce('div');col.className='bcol';
+    const bar=ce('div');bar.className='bbar';bar.style.height=Math.max(4,v*1.1)+'px';
+    const lb=ce('div');lb.className='blbl';lb.textContent=DAM[(d.getDay()+1)%7];
+    const vl=ce('div');vl.className='bval';vl.textContent=v+'%';
+    col.appendChild(bar);col.appendChild(lb);col.appendChild(vl);ch.appendChild(col);}
+}
+function renderMoCal(){
+  const cal=G('mcal');cal.innerHTML='';
+  const now=new Date(),yr=now.getFullYear(),mo=now.getMonth();
+  const dim=new Date(yr,mo+1,0).getDate(),fd=new Date(yr,mo,1).getDay();
+  ['እ','ሰ','ማ','ረ','ሐ','አ','ቅ'].forEach(x=>{const h=ce('div');h.className='calhdr';h.textContent=x;cal.appendChild(h);});
+  for(let i=0;i<fd;i++)cal.appendChild(ce('div'));
+  for(let day=1;day<=dim;day++){
+    const str=`${yr}-${p2(mo+1)}-${p2(day)}`;
+    const isTd=day===now.getDate();
+    const v=isTd?getPct():(S.monthly[str]??-1);
+    const el=ce('div');el.className='calday';el.textContent=day;
+    if(isTd)el.classList.add('td');
+    if(v>=80)el.classList.add('g');else if(v>=50)el.classList.add('y');else if(v>=0)el.classList.add('r');
+    cal.appendChild(el);}
+}
+function renderCatProg(){
+  const l=G('catprog');l.innerHTML='';
+  Object.keys(CATS).forEach(cat=>{
+    const ts=S.tasks.filter(t=>t.cat===cat),dn=ts.filter(t=>t.done).length;
+    const p=ts.length?Math.round(dn/ts.length*100):0,c=CATS[cat];
+    l.innerHTML+=`<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:13px;">${c.ic} ${c.nm}</span>
+        <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent);">${p}%</span>
+      </div>
+      <div class="pw"><div class="pb h6" style="width:${p}%"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px;">${dn}/${ts.length}</div></div>`;});
+}
+function renderBadges(){
+  const b=S.badges||{};
+  G('bdgrid').innerHTML=`
+    <div class="badge${b.bestDay?' on':''}">🏆 ምርጥ ቀን</div>
+    <div class="badge${b.bestWeek?' on':''}">🌟 ምርጥ ሳምንት</div>
+    <div class="badge${b.bestMonth?' on':''}">👑 ምርጥ ወር</div>
+    <div class="badge${b.sk7?' on':''}">🔥 7 ቀን Streak</div>
+    <div class="badge${b.sk30?' on':''}">💎 30 ቀን Streak</div>
+    <div class="badge${b.bk12?' on':''}">📚 12 መጽሐፍ</div>`;
+}
+function renderLearnLog(){
+  const l=G('learnlist'),lg=S.learnLog||[];
+  l.innerHTML=lg.length?lg.slice(-6).reverse().map(x=>`<div class="logitem"><div class="logdate">${x.d}</div><div class="logtxt">${x.t}</div></div>`).join('')
+    :'<div style="color:var(--text3);font-size:13px;padding:8px 0;">ምንም የለም — ዛሬ የተማርከውን ጻፍ!</div>';
+}
+function addLearn(){const inp=G('learninp'),t=inp.value.trim();if(!t)return;if(!S.learnLog)S.learnLog=[];S.learnLog.push({d:td(),t});inp.value='';save();renderLearnLog();toast('📚 ተመዘገበ!');}
+function chBooks(d){S.books=Math.max(0,(S.books||0)+d);save();G('booksn').textContent=S.books;if(S.books>=12){chkBadges(getPct());renderBadges();}}
+function saveTmr(){S.tomorrow=G('tmrinp').value;save();}
+
+// ══════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════
+function renderSettings(){
+  G('nameinp').value=S.name||'አብዱ';
+  [['sw-g','gold'],['sw-gr','green'],['sw-b','blue']].forEach(([id,t])=>{const el=G(id);if(el)el.classList.toggle('on',S.theme===t);});
+  G('lmtog').classList.toggle('on',!S.dark);
+  [['t-wa','waterAlarm'],['t-da','distanceAlert'],['t-er','eyeRule'],['t-gw','gentleWake'],['t-aa','allAlarms'],['wabtn','waterAlarm']]
+    .forEach(([id,k])=>{const el=G(id);if(el)el.classList.toggle('on',S.cfg[k]);});
+}
+function saveName(){S.name=G('nameinp').value.trim()||'አብዱ';save();renderHome();toast('✅ ስም ተቀምጧል!');}
+function setTheme(t){S.theme=t;save();applyTheme();renderSettings();}
+function applyTheme(){
+  document.body.className='';
+  if(S.theme==='green')document.body.classList.add('theme-green');
+  if(S.theme==='blue')document.body.classList.add('theme-blue');
+  if(!S.dark)document.body.classList.add('light-mode');
+}
+function togLight(){S.dark=!S.dark;save();applyTheme();renderSettings();}
+function togSet(k){
+  S.cfg[k]=!S.cfg[k];save();renderSettings();
+  if(k==='waterAlarm')S.cfg.waterAlarm?startWAlm():stopWAlm();
+  if(k==='eyeRule')S.cfg.eyeRule?startEye():stopEye();
+  if(k==='distanceAlert'&&S.cfg.distanceAlert)speak("Please hold your phone at least 40 centimeters away from your eyes.");
+}
+function expJSON(){
+  const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=ce('a');a.href=URL.createObjectURL(b);a.download=`abdu-${td()}.json`;a.click();toast('📤 ዳታ ተልኳል!');
+}
+function impJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{try{S=JSON.parse(ev.target.result);save();applyTheme();renderHome();toast('📥 ዳታ ተጭኗል!');}catch{toast('❌ ፋይሉ ትክክለኛ አይደለም!');}};
+  r.readAsText(f);
+}
+function clearAll(){if(!confirm('ሁሉም ዳታ ይሰረዛል!'))return;localStorage.removeItem('abdu4');location.reload();}
+function dlReport(){
+  const dn=S.tasks.filter(t=>t.done).length;
+  const b=new Blob([`═══════════════════\nየአብዱ አፕ ሪፖርት\n═══════════════════\nቀን: ${td()}\nስም: ${S.name}\nStreak: ${S.streak||0}\nዛሬ: ${dn}/${S.tasks.length} (${getPct()}%)\nውሃ: ${S.cups.filter(Boolean).length*250}ml\nስፖርት: ${S.spDone?'✅':'❌'}\nመጽሐፍ: ${S.books||0}\n═══════════════════`],{type:'text/plain'});
+  const a=ce('a');a.href=URL.createObjectURL(b);a.download=`report-${td()}.txt`;a.click();toast('📄 ሪፖርት ወረደ!');
+}
+
+// ══════════════════════════════════════════════════
+// POMODORO
+// ══════════════════════════════════════════════════
+function setPomo(m){PM.mode=m;PM.run=false;clearInterval(PM.iv);G('pt-w').classList.toggle('on',m==='work');G('pt-b').classList.toggle('on',m==='break');resetPomo();}
+function resetPomo(){clearInterval(PM.iv);PM.run=false;PM.sec=(PM.mode==='work'?(S.cfg.pomoMin||25):5)*60;G('pomodisp').textContent=fmt(PM.sec);G('pomobtn').textContent='▶ ጀምር';}
+function togPomo(){
+  if(PM.run){clearInterval(PM.iv);PM.run=false;G('pomobtn').textContent='▶ ጀምር';}
+  else{PM.run=true;G('pomobtn').textContent='⏸ ቆም';
+    PM.iv=setInterval(()=>{PM.sec--;G('pomodisp').textContent=fmt(PM.sec);
+      if(PM.sec<=0){clearInterval(PM.iv);PM.run=false;
+        if(PM.mode==='work'){speak("Well done! Take a 5-minute break.");toast('⏱ ጠናቀቀ!');setPomo('break');}
+        else{speak("Break over. Back to work!");toast('☕ ዕረፍት አለቀ!');setPomo('work');}}},1000);}
+}
+
+// ══════════════════════════════════════════════════
+// ALARMS
+// ══════════════════════════════════════════════════
+function startAlarms(){
+  startWAlm(); startEye();
+  tAlmIv=setInterval(()=>{
+    if(!S.cfg.allAlarms)return;
+    const now=new Date(),ts=`${p2(now.getHours())}:${p2(now.getMinutes())}`;
+    S.tasks.forEach(t=>{if(t.time===ts&&!t.done){speak(`Reminder! Time for: ${t.title}`);toast(`⏰ ${t.title}`);}});
+    if(S.wAmT===ts&&!S.wAmDone)speak("Good morning! Time for your 25-minute walk.",S.cfg.gentleWake);
+    if(S.wPmT===ts&&!S.wPmDone)speak("Good evening! Time for your 25-minute walk.");
+    const dd=DAM[(now.getDay()+1)%7];
+    if(S.spAlarm===ts&&S.spDays.includes(dd)&&!S.spDone)speak("It's workout time! Let's go!");
+    if(now.getMinutes()===0&&S.cfg.distanceAlert)speak("Please hold your phone at least 40 centimeters away from your eyes.");
+    if(now.getHours()===21&&now.getMinutes()===0)toast('🎯 ነገ ምን ነው ቁጥር 1 ትኩረትህ?');
+  },60000);
+}
+function startWAlm(){stopWAlm();if(!S.cfg.waterAlarm||!S.cfg.allAlarms)return;
+  const h=new Date().getHours();if(h>=7&&h<16)chkW();wAlmIv=setInterval(chkW,30*60*1000);}
+function stopWAlm(){clearInterval(wAlmIv);}
+function chkW(){const h=new Date().getHours();if(h<7||h>=16)return;
+  if(S.cups.filter(Boolean).length<8){speak("Time to drink water! Stay hydrated.");toast('💧 ውሃ ሰዓቱ ነው!');}}
+function startEye(){stopEye();if(!S.cfg.eyeRule||!S.cfg.allAlarms)return;
+  EY.mSec=20*60;EY.mIv=setInterval(()=>{EY.mSec--;if(EY.mSec<=0){clearInterval(EY.mIv);eyeBreak();}},1000);}
+function stopEye(){clearInterval(EY.mIv);clearInterval(EY.bIv);G('eye').classList.remove('show');}
+function eyeBreak(){
+  speak("Eye break! Look at something 6 meters away for 20 seconds.");
+  G('eye').classList.add('show');EY.bSec=20;G('etmr').textContent=EY.bSec;
+  EY.bIv=setInterval(()=>{EY.bSec--;G('etmr').textContent=EY.bSec;
+    if(EY.bSec<=0){clearInterval(EY.bIv);G('eye').classList.remove('show');toast('👁️ ዓይን ዕረፍት ጠናቀቀ!');startEye();}},1000);
+}
+
+// ══════════════════════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════════════════════
+function confetti(){
+  const cv=G('cvc'),cx=cv.getContext('2d');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const cols=['#F5C842','#2ECC71','#3498DB','#E74C3C','#9B59B6','#F39C12'];
+  const ps=Array.from({length:130},()=>({x:Math.random()*cv.width,y:-20,w:Math.random()*10+4,h:Math.random()*5+3,
+    c:cols[~~(Math.random()*cols.length)],vx:(Math.random()-.5)*5,vy:Math.random()*6+2,r:Math.random()*360,rv:(Math.random()-.5)*8,l:1}));
+  let raf;
+  (function draw(){cx.clearRect(0,0,cv.width,cv.height);let a=false;
+    ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.rv;p.vy+=.1;p.l-=.007;if(p.l<=0)return;a=true;
+      cx.save();cx.globalAlpha=Math.max(0,p.l);cx.translate(p.x,p.y);cx.rotate(p.r*Math.PI/180);
+      cx.fillStyle=p.c;cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cx.restore();});
+    if(a)raf=requestAnimationFrame(draw);else cx.clearRect(0,0,cv.width,cv.height);})();
+}
+
+// ══════════════════════════════════════════════════
+// PWA INSTALL
+// ══════════════════════════════════════════════════
+let dip=null;
+function setupInstall(){
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;
+    if(!matchMedia('(display-mode:standalone)').matches)setTimeout(()=>G('ibanner').classList.add('show'),5000);});
+  window.addEventListener('appinstalled',()=>{G('ibanner').classList.remove('show');dip=null;toast('🎉 አፑ ተጭኗል!',5000);});
+}
+function doInstall(){
+  if(!dip){toast('📱 Browser Menu → "Add to Home Screen"');return;}
+  dip.prompt();dip.userChoice.then(r=>{if(r.outcome==='accepted')G('ibanner').classList.remove('show');dip=null;});
+}
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function G(id){return document.getElementById(id);}
+function ce(t){return document.createElement(t);}
+function p2(n){return String(n).padStart(2,'0');}
+function fmt(s){return `${p2(~~(s/60))}:${p2(s%60)}`;}
+function toast(msg,dur=3000){const t=G('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeMod(e,id){if(!e||e.target===G(id))G(id).classList.remove('open');}
+
+// ══════════════════════════════════════════════════
+// LIFECYCLE
+// ══════════════════════════════════════════════════
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){checkReset();
+    if(curScr==='home')renderHome();
+    if(curScr==='tasks')renderTasks();
+    if(curScr==='progress')renderProg();}
+});
+window.addEventListener('online', ()=>toast('🌐 ኢንተርኔት ተገናኘ!'));
+window.addEventListener('offline',()=>toast('📴 ኦፍላይን — ሁሉም ይሰራል!'));
+window.addEventListener('resize', ()=>{const c=G('cvc');c.width=innerWidth;c.height=innerHeight;});
+if('wakeLock' in navigator)navigator.wakeLock.request('screen').catch(()=>{});
+if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+
+// ══════════════════════════════════════════════════
+// ENTRY POINT — DOMContentLoaded
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. SW ይመዝገብ
+  regSW();
+
+  // 2. State ይጫን
+  loadS();
+
+  // 3. Theme ይተግበር
+  applyTheme();
+
+  // 4. Splash ይዘምን
+  const left = S.tasks.filter(t=>!t.done).length;
+  G('sq').textContent = `ዛሬ ${left} ታስኮች ይጠብቁሃል!`;
+  G('ss').textContent = QUOTES[new Date().getDay() % QUOTES.length];
+
+  // 5. Splash ካለቀ በኋላ App ይጀምር
+  setTimeout(() => {
+    G('splash').classList.add('hide');
+    G('app').style.display = 'flex';
+
+    setTimeout(() => {
+      G('splash').style.display = 'none';
+    }, 700);
+
+    // 6. Render
+    renderHome();
+    renderTasks();
+
+    // 7. Alarms ይጀምሩ
+    startAlarms();
+
+    // 8. Pomodoro ይጀምር
+    resetPomo();
+
+    // 9. Install prompt ይጠብቅ
+    setupInstall();
+
+    // 10. Distance alert
+    if (S.cfg.distanceAlert && S.cfg.allAlarms) {
+      setTimeout(() => speak("Please hold your phone at least 40 centimeters away from your eyes."), 2000);
+    }
+
+    // 11. URL param check
+    const sp = new URLSearchParams(location.search).get('screen');
+    if (sp && ['home','tasks','health','progress','settings'].includes(sp)) nav(sp);
+
+  }, 2700);
+});
+</script>
+</body>
+</html>
